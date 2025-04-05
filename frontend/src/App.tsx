@@ -1,4 +1,5 @@
 import Map from './components/map/Map'
+import { motion } from 'framer-motion';
 
 function App() {
   // Sample data for testing
@@ -21,9 +22,19 @@ function App() {
   ];
 
   return (
-    <div className="p-4 bg-[red] min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">WildfireWatch</h1>
-      <p className="mb-4">Real-time wildfire monitoring and resource allocation</p>
+    <div className="p-4 bg-[black] min-h-screen">
+      <div className="flex-grow flex items-center justify-center">
+      <motion.div
+        className="text-white text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
+        <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
+      </motion.div>
+    </div>
+      
       <Map markers={wildfireMarkers} />
     </div>
   )

@@ -15,6 +15,7 @@
     "@types/leaflet.heat": "^0.2.4",
     "axios": "^1.8.4",
     "firebase": "^11.6.0",
+    "framer-motion": "^12.6.3",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
     "react": "^19.0.0",

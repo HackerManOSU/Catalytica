@@ -14,6 +14,16 @@ interface MapProps {
     details?: string;
   }>;
 }
+// Define props interface for the Map component
+interface MapProps {
+  center?: [number, number]; // [latitude, longitude]
+  zoom?: number;
+  markers?: Array<{
+    position: [number, number];
+    severity: number;
+    details?: string;
+  }>;
+}
 
 const Map = ({ 
   center = [37.8, -96], // Default center of USA
@@ -70,6 +80,9 @@ const Map = ({
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Initialize map only once when component mounts
+    if (!mapContainerRef.current || mapRef.current) return;
   useEffect(() => {
     // Initialize map only once when component mounts
     if (!mapContainerRef.current || mapRef.current) return;
@@ -187,6 +200,16 @@ const Map = ({
         mapRef.current?.removeLayer(layer);
       }
     });
+  // Effect to add/update markers when markers prop changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    // Clear existing markers
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+        mapRef.current?.removeLayer(layer);
+      }
+    });
 
     // Add new markers
     markers.forEach(marker => {
@@ -239,4 +262,5 @@ const Map = ({
   );
 };
 
+export default Map;
 export default Map;
