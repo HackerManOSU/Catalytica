@@ -1,6 +1,7 @@
 import USMap from './components/Maps/USMap';
 import HawaiiMap from './components/Maps/HawaiiMap';
 import AlaskaMap from './components/Maps/AlaskaMap';
+import FireAnimation from './components/utils/fireicon';
 import { requestAndStoreLocation } from './components/GeoLocation/location';
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
@@ -36,17 +37,19 @@ function App() {
 
   return (
     <div className="p-4 bg-[black] min-h-screen">
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center mt-5">
         <motion.div
           className="text-white text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
+          <h2 className="text-4xl font-bold mb-4">WildfireWatch</h2>
           <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
         </motion.div>
       </div>
+
+      
       
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -107,6 +110,137 @@ function App() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto items-center justify-center mt-5 mb-5">
+      <motion.div
+        className="text-white text-center w-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <p className="text-xl mb-8">Fires happening in the U.S. right now</p>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-gray-900 rounded-lg overflow-hidden">
+            <thead>
+              <tr className="bg-gray-800 text-gray-300 uppercase text-sm">
+                <th className="py-3 px-4 text-left">Severity</th>
+                <th className="py-3 px-4 text-left">total fires</th>
+                <th className="py-3 px-4 text-left">Total acres burned</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-200">
+              <tr className="border-b border-gray-700">
+              <td className="py-3 px-4">
+                  <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+              </tr>
+              <tr className="border-b border-gray-700">
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={false} />
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+              </tr>
+              <tr className="border-b border-gray-700">
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+              </tr>
+              <tr className="border-b border-gray-700">
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-3 px-4">
+                <div className="flex w-full max-w-[250px] ">
+                  <FireAnimation size={30} isVisible={true} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                  <FireAnimation size={30} isVisible={false} />
+                    
+                  </div>
+                </td>
+                <td className="py-3 px-4"><div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+                <td className="py-3 px-4">
+                <div className="flex  space-x-4 w-full max-w-[250px] ">
+                  <p>5</p>
+                </div>
+                </td>
+              </tr>
+            </tbody>
+            
+          </table>
+        </div>
+      </motion.div>
       </div>
       
       {/* Alaska Fullscreen Modal */}
