@@ -284,34 +284,6 @@ const hawaiiMap = ({
   }, []);
 
   return (
-<<<<<<< HEAD:frontend/src/components/map/Map.tsx
-    <div className="relative">
-      {loading && (
-        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <p>Loading wildfire data...</p>
-          </div>
-        </div>
-      )}
-      {error && (
-        <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
-          {error}
-        </div>
-      )}
-    <div 
-      ref={mapContainerRef} 
-      style={{ 
-        height: '600px', 
-        width: '100%',
-        borderRadius: '12px',
-        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        overflow: 'hidden'
-      }} 
-      className="map-container" 
-    />
-    </div>
-=======
     <div 
       ref={mapContainerRef} 
       style={{ 
@@ -322,7 +294,6 @@ const hawaiiMap = ({
         margin: '0 auto' // This centers the div horizontally
       }} 
     />
->>>>>>> ba7c420629d304421ae6df73e567f98b8fd1e418:frontend/src/components/Maps/AlaskaMap.tsx
   );
 };
 
