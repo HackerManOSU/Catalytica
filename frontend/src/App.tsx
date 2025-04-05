@@ -1,4 +1,7 @@
 import Map from './components/map/Map'
+import { requestAndStoreLocation } from './components/GeoLocation/location';
+import { useEffect } from "react";
+
 import { motion } from 'framer-motion';
 
 function App() {
@@ -21,20 +24,25 @@ function App() {
     }
   ];
 
+
+  useEffect(() => {
+    requestAndStoreLocation();
+  }, []);
+
   return (
     <div className="p-4 bg-[black] min-h-screen">
       <div className="flex-grow flex items-center justify-center">
-      <motion.div
-        className="text-white text-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
-        <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
-      </motion.div>
-    </div>
-      
+        <motion.div
+          className="text-white text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
+          <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
+        </motion.div>
+      </div>
+
       <Map markers={wildfireMarkers} />
     </div>
   )
