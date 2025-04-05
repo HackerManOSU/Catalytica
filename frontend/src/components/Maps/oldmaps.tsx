@@ -25,7 +25,7 @@ interface MapProps {
   }>;
 }
 
-const hawaiiMap = ({ 
+const Map = ({ 
   center = [37.8, -96], // Default center of USA
   zoom = 4.5,
   markers = [] 
@@ -284,7 +284,6 @@ const hawaiiMap = ({
   }, []);
 
   return (
-<<<<<<< HEAD:frontend/src/components/map/Map.tsx
     <div className="relative">
       {loading && (
         <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
@@ -311,19 +310,7 @@ const hawaiiMap = ({
       className="map-container" 
     />
     </div>
-=======
-    <div 
-      ref={mapContainerRef} 
-      style={{ 
-        height: '100%', 
-        width: '100%',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        margin: '0 auto' // This centers the div horizontally
-      }} 
-    />
->>>>>>> ba7c420629d304421ae6df73e567f98b8fd1e418:frontend/src/components/Maps/AlaskaMap.tsx
   );
 };
 
-export default hawaiiMap;
+export default Map;
