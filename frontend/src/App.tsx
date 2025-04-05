@@ -1,7 +1,12 @@
 import USMap from './components/Maps/USMap';
 import HawaiiMap from './components/Maps/HawaiiMap';
 import AlaskaMap from './components/Maps/AlaskaMap';
+import { requestAndStoreLocation } from './components/GeoLocation/location';
+import { useEffect } from "react";
+
 import { motion } from 'framer-motion';
+import { requestAndStoreLocation } from './components/GeoLocation/location';
+import { useEffect } from "react";
 
 function App() {
   // Sample data for testing
@@ -22,6 +27,11 @@ function App() {
       details: "Low severity fire near Denver."
     }
   ];
+
+
+  useEffect(() => {
+    requestAndStoreLocation();
+  }, []);
 
   return (
     <div className="p-4 bg-[black] min-h-screen">
