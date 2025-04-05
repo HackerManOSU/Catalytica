@@ -1,7 +1,10 @@
-import Map from './components/map/Map'
+import USMap from './components/Maps/USMap';
+import HawaiiMap from './components/Maps/HawaiiMap';
+import AlaskaMap from './components/Maps/AlaskaMap';
 import { requestAndStoreLocation } from './components/GeoLocation/location';
 import { useEffect } from "react";
 import { motion } from 'framer-motion';
+
 
 function App() {
   // Sample data for testing
@@ -41,8 +44,34 @@ function App() {
           <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
         </motion.div>
       </div>
-
-      <Map markers={wildfireMarkers} />
+      
+      <div className="max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Left column for Alaska and Hawaii */}
+          <div className="md:col-span-1 flex flex-col gap-6">
+            <div style={{ height: "300px" }}>
+              <h2 className="text-white text-xl font-semibold mb-2">Alaska</h2>
+              <div style={{ height: "280px" }}>
+                <AlaskaMap markers={wildfireMarkers} />
+              </div>
+            </div>
+            <div style={{ height: "300px" }}>
+              <h2 className="text-white text-xl font-semibold mb-2">Hawaii</h2>
+              <div style={{ height: "280px" }}>
+                <HawaiiMap markers={wildfireMarkers} />
+              </div>
+            </div>
+          </div>
+          
+          {/* Right column for main US map */}
+          <div className="md:col-span-3">
+            <h2 className="text-white text-xl font-semibold mb-2">Mainland US</h2>
+            <div style={{ height: "600px" }}>
+              <USMap markers={wildfireMarkers} />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
