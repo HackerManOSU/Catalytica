@@ -38,13 +38,14 @@ const Map = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+
   // Fetch FIRMS data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         // Fetch 3 days of fire data
-        const data = await fetchRecentFIRMSData(3);
+        const data = await fetchRecentFIRMSData(1000);
         setFirmsData(data);
         setError(null);
       } catch (error) {
@@ -92,8 +93,9 @@ const Map = ({
     }).setView(center, zoom);
 
     // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
       maxZoom: 19
     }).addTo(mapRef.current);
 
@@ -169,16 +171,16 @@ const Map = ({
       
       // Create and add the heatmap layer
       heatLayerRef.current = L.heatLayer(heatData as [number, number, number][], {
-        radius: 25,       // Increased for better visibility
+        radius: 25,
         blur: 15,
         maxZoom: 10,
-        max: 10,          // Maximum intensity value
+        max: 10,
         gradient: {
-          0.2: 'blue',
-          0.4: 'lime',
-          0.6: 'yellow',
-          0.8: 'orange',
-          1.0: 'red'
+          0.1: '#89CFF0', // Light blue
+          0.3: '#00FF00', // Green
+          0.5: '#FFFF00', // Yellow
+          0.7: '#FFA500', // Orange
+          0.9: '#FF0000'  // Red
         }
       }).addTo(mapRef.current);
     } catch (error) {
@@ -200,26 +202,86 @@ const Map = ({
 
     // Add new markers
     markers.forEach(marker => {
-      // Create custom icon based on severity
       const severity = marker.severity;
-      const color = severity > 7 ? 'red' : severity > 4 ? 'orange' : 'yellow';
-      const radius = severity * 4; // Size based on severity
+      const color = severity > 7 ? '#FF3B30' : severity > 4 ? '#FF9500' : '#FFCC00';
+      const radius = Math.max(8, severity * 3); // Minimum size with scaling
       
       const circleMarker = L.circleMarker(marker.position, {
         radius,
         fillColor: color,
-        color: 'white',
-        weight: 1,
+        color: '#FFFFFF',
+        weight: 2,
         opacity: 1,
-        fillOpacity: 0.7
+        fillOpacity: 0.8,
+        className: 'pulse-marker' // We'll add animation
       }).addTo(mapRef.current!);
       
-      // Add popup if details are provided
+      // Enhanced popup
       if (marker.details) {
-        circleMarker.bindPopup(marker.details);
+        circleMarker.bindPopup(
+          `<div class="popup-content">
+            <h3 class="text-lg font-bold mb-2">Wildfire Alert</h3>
+            <p>${marker.details}</p>
+            <p class="mt-2"><strong>Severity:</strong> ${marker.severity}/10</p>
+          </div>`,
+          {
+            closeButton: true,
+            className: 'custom-popup'
+          }
+        );
       }
     });
   }, [markers]);
+
+  useEffect(() => {
+    // Add custom CSS to the head
+    const style = document.createElement('style');
+    style.textContent = `
+      .pulse-marker {
+        animation: pulse 1.5s infinite;
+      }
+      
+      @keyframes pulse {
+        0% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.3);
+        }
+        100% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+      }
+      
+      .custom-popup .leaflet-popup-content-wrapper {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 8px;
+        padding: 5px;
+      }
+      
+      .custom-popup .leaflet-popup-tip {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+      
+      .map-container {
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      
+      .map-container:hover {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   return (
     <div className="relative">
@@ -235,16 +297,18 @@ const Map = ({
           {error}
         </div>
       )}
-      <div 
-        ref={mapContainerRef} 
-        style={{ 
-          height: '600px', 
-          width: '100%',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }} 
-        className="map-container" 
-      />
+    <div 
+      ref={mapContainerRef} 
+      style={{ 
+        height: '600px', 
+        width: '100%',
+        borderRadius: '12px',
+        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        overflow: 'hidden'
+      }} 
+      className="map-container" 
+    />
     </div>
   );
 };

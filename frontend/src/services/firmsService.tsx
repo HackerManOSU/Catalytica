@@ -20,8 +20,17 @@ export interface FIRMSData {
  * @returns Array of FIRMS data points
  */
 export const fetchRecentFIRMSData = async (days: number = 1): Promise<FIRMSData[]> => {
+  // Check if we should use mock data based on environment variable
+  const useMockData = import.meta.env.VITE_USE_MOCK_DATA?.toLowerCase() === 'true';
+  
+  // If mock data is explicitly enabled, return mock data immediately
+  if (useMockData) {
+    console.log('Using mock data as specified in environment variables');
+    return getFallbackMockData();
+  }
+  
   // Check if days is within valid range
-  const validDays = Math.max(1, Math.min(10, days)); // Clamp between 1-10
+  const validDays = Math.max(1, Math.min(1000, days)); // Clamp between 1-10
   
   try {
     console.log('Fetching FIRMS data for the past', validDays, 'days');
