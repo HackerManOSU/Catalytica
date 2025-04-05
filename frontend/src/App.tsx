@@ -1,7 +1,6 @@
 import Map from './components/map/Map'
 import { requestAndStoreLocation } from './components/GeoLocation/location';
 import { useEffect } from "react";
-
 import { motion } from 'framer-motion';
 
 function App() {
