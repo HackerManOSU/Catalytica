@@ -21,7 +21,7 @@ function App() {
   ];
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-[red] min-h-screen">
       <h1 className="text-2xl font-bold mb-4">WildfireWatch</h1>
       <p className="mb-4">Real-time wildfire monitoring and resource allocation</p>
       <Map markers={wildfireMarkers} />
