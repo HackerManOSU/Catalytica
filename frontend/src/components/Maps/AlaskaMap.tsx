@@ -225,13 +225,12 @@ const hawaiiMap = ({
     <div 
       ref={mapContainerRef} 
       style={{ 
-        height: '600px', 
-        width: '80%',
+        height: '100%', 
+        width: '100%',
         borderRadius: '8px',
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         margin: '0 auto' // This centers the div horizontally
       }} 
-      className="map-container mx-auto" // mx-auto is Tailwind's way of setting margin: 0 auto
     />
   );
 };
