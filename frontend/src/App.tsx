@@ -5,8 +5,7 @@ import { requestAndStoreLocation } from './components/GeoLocation/location';
 import { useEffect } from "react";
 
 import { motion } from 'framer-motion';
-import { requestAndStoreLocation } from './components/GeoLocation/location';
-import { useEffect } from "react";
+
 
 function App() {
   // Sample data for testing
