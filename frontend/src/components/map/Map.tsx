@@ -83,9 +83,6 @@ const Map = ({
   useEffect(() => {
     // Initialize map only once when component mounts
     if (!mapContainerRef.current || mapRef.current) return;
-  useEffect(() => {
-    // Initialize map only once when component mounts
-    if (!mapContainerRef.current || mapRef.current) return;
 
     // Create Leaflet map instance without US boundaries
     mapRef.current = L.map(mapContainerRef.current, {
@@ -200,16 +197,6 @@ const Map = ({
         mapRef.current?.removeLayer(layer);
       }
     });
-  // Effect to add/update markers when markers prop changes
-  useEffect(() => {
-    if (!mapRef.current) return;
-    
-    // Clear existing markers
-    mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
-        mapRef.current?.removeLayer(layer);
-      }
-    });
 
     // Add new markers
     markers.forEach(marker => {
@@ -234,7 +221,7 @@ const Map = ({
     });
   }, [markers]);
 
-    return (
+  return (
     <div className="relative">
       {loading && (
         <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
@@ -262,5 +249,4 @@ const Map = ({
   );
 };
 
-export default Map;
 export default Map;
