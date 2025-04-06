@@ -20,7 +20,7 @@ interface MapProps {
 }
 
 const AlaskaMap = ({ 
-  center = [64.2008, -149.4937], // Center of Alaska
+  center = [64.2008, -149.4937], 
   zoom = 4,
   markers = [],
   fullscreen = false

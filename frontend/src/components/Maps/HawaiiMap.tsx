@@ -59,7 +59,6 @@ const HawaiiMap = ({
     fetchData();
   }, []);
 
-  // Map initialization effect
   useEffect(() => {
     if (!mapContainerRef.current) return;
     

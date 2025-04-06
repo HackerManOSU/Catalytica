@@ -1,6 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
-
-// Define types for the state and action payload
+//test
 type MapState = {
   currentLongitude: number | null;
   currentLatitude: number | null;
@@ -27,7 +26,6 @@ type MapAction =
   | { type: 'SET_CURRENT_TEMPERATURE'; payload: number }
   | { type: 'RESET_MAP_STATE' };
 
-// Get initial state from localStorage if available
 const getInitialState = (): MapState => {
   try {
     const savedState = localStorage.getItem('mapState');
@@ -60,7 +58,6 @@ const getInitialState = (): MapState => {
   }
 };
 
-// Reducer function
 function mapReducer(state: MapState, action: MapAction): MapState {
   switch (action.type) {
     case 'SET_CURRENT_LONGITUDE':
@@ -90,15 +87,12 @@ function mapReducer(state: MapState, action: MapAction): MapState {
   }
 }
 
-// Create context with explicit types
 const MapStateContext = createContext<MapState | undefined>(undefined);
 const MapDispatchContext = createContext<React.Dispatch<MapAction> | undefined>(undefined);
 
-// Provider component
 export function MapStateProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(mapReducer, getInitialState());
 
-  // This effect ensures state is saved whenever it changes
   useEffect(() => {
     localStorage.setItem('mapState', JSON.stringify(state));
   }, [state]);
@@ -112,7 +106,6 @@ export function MapStateProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Custom hooks to use state and dispatch
 export function useMapState() {
   const context = useContext(MapStateContext);
   if (context === undefined) {
@@ -129,7 +122,6 @@ export function useMapDispatch() {
   return context;
 }
 
-// Action creators with proper typing
 export const MapActions = {
   setCurrentLongitude: (longitude: number) => ({
     type: 'SET_CURRENT_LONGITUDE' as const,
