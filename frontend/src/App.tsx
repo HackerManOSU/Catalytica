@@ -5,6 +5,7 @@ import FireAnimation from './components/utils/fireicon';
 import { requestAndStoreLocation } from './components/GeoLocation/location';
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
+import Dashboard from './components/utils/dashboard';
 
 function App() {
   // Add state for fullscreen maps
@@ -32,9 +33,8 @@ function App() {
     <div className="p-4 bg-[black] min-h-screen">
       {!alaskaFullscreen && !hawaiiFullscreen && !usFullscreen && (
         <>
-          <div className="flex-grow flex items-center justify-center">
             <motion.div
-              className="text-white text-center"
+              className=" max-w-5xl mx-auto text-white mt-5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -42,9 +42,8 @@ function App() {
               <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
               <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
             </motion.div>
-          </div>
           
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto bg-gray-800 rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Left column for Alaska and Hawaii */}
               <div className="md:col-span-1 flex flex-col gap-6">
@@ -111,13 +110,28 @@ function App() {
             </div>
           </div>
           <div className="max-w-5xl mx-auto items-center justify-center mt-5 mb-5">
+
       <motion.div
-        className="text-white text-center w-full"
+        className="text-white  w-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+
+      <Dashboard />
+
+
+
+      </motion.div>
+
+      <motion.div
+        className="text-white w-full mt-5"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <p className="text-xl mb-8">Fires happening in the U.S. right now</p>
+        <h1 className="text-4xl font-bold mb-4">Fires happing in the U.S.
+        </h1>
         
         <div className="overflow-x-auto">
           <table className="min-w-full bg-gray-900 rounded-lg overflow-hidden">

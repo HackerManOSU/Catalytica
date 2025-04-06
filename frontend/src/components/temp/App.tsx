@@ -1,7 +1,7 @@
-import USMap from './components/Maps/USMap';
-import HawaiiMap from './components/Maps/HawaiiMap';
-import AlaskaMap from './components/Maps/AlaskaMap';
-import { requestAndStoreLocation } from './components/GeoLocation/location';
+import USMap from '../Maps/USMap';
+import HawaiiMap from '../Maps/HawaiiMap';
+import AlaskaMap from '../Maps/AlaskaMap';
+import { requestAndStoreLocation } from '../GeoLocation/location';
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
 
