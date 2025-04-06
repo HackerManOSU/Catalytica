@@ -43,7 +43,7 @@ export async function getWeatherController(): Promise<Weather[]> {
 // --------------------------------------------------------------------
 
 // API Key
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '5c9b0fcd199a99e6da5ca17c4ffa43f3';
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY ;
 
 export const scheduledWeatherUpdate = onSchedule('every 1 minutes', async (event) => {
   try {
@@ -116,7 +116,7 @@ export const fetchRecentFIRMSData = async (days: number = 1): Promise<FIRMSData[
   }
 
   try {
-    const API_KEY = 'cf98c6449135681479583e01ac6894d9';
+    const API_KEY =';
     if (!API_KEY) {
       console.error('FIRMS API key not found');
       throw new Error('FIRMS API key not found');
