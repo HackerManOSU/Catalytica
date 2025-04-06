@@ -5,7 +5,6 @@ import ReportFireModal from './ReportFireModal';
 import Recommendation from './Recommendation';
 import { getFIRMS, FIRMSData } from '../../services/firmsService';
 
-
 function haversineDistance(
     lat1: number, 
     lon1: number, 
@@ -124,12 +123,13 @@ function haversineDistance(
         const response = await fetch(url);
         const data = await response.json();
       
-        const city = data?.results?.[0]?.components?.city ||
+        const county = data?.results?.[0]?.components?.county ||
+                     data?.results?.[0]?.components?.city ||
                      data?.results?.[0]?.components?.town ||
                      data?.results?.[0]?.components?.village ||
-                     data?.results?.[0]?.components?.county ||
                      "Unknown";
-        return city;
+        const state = data?.results?.[0]?.components?.state_code || "Unknown State";
+        return county;
       };
       
       const fetchFirmsUpdates = async () => {

@@ -157,7 +157,7 @@ function App() {
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
               <h1 className="text-4xl font-bold mb-4">
-                Fires happing in the U.S.
+                Fires burning in the U.S.
               </h1>
 
               <UsFireTable />
