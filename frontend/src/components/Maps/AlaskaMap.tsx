@@ -6,6 +6,7 @@ import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
 import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
 import { MapActions } from '../utils/mapstate'; // Import map actions
+import './border.css';
 
 // Define props interface for the Map component
 interface MapProps {
@@ -237,7 +238,7 @@ const AlaskaMap = ({
   return (
     <div className="relative">
       {loading && (
-      <div className="loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+      <div className="box loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
         <LoadingSpinner />
       </div>
       )}
@@ -253,7 +254,7 @@ const AlaskaMap = ({
           width: '100%',
           borderRadius: '12px',
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 1)',
+          border: '3px solid rgb(251, 146, 60)',
           overflow: 'hidden',
           visibility: mapReady ? 'visible' : 'hidden'
         }} 
