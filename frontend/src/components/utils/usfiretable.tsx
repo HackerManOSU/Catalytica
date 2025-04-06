@@ -2,7 +2,6 @@ import FireAnimation from './fireicon';
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../Lib/firebase';
-import { useMapState } from '../utils/mapstate';
 
 const getFireLevel = (frp: number) => {
     if (!Number.isFinite(frp)) return null; // skip bad values

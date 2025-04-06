@@ -65,35 +65,52 @@ const ReportFireModal: React.FC<ReportFireModalProps> = ({ isOpen, onClose }) =>
         <h2 className="text-2xl font-bold text-white mb-4">Report a Fire</h2>
         
         <div className="mb-4">
-          <label htmlFor="report" className="block text-white mb-2">
-            Please provide details about the fire (max 500 characters)
-          </label>
-          <textarea
-            id="report"
-            value={reportText}
-            onChange={(e) => setReportText(e.target.value.slice(0, maxChars))}
-            className="w-full h-32 p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            placeholder="Describe the fire, its location, size, and any other important details..."
-          />
-          <p className="text-right text-gray-400 text-sm mt-1">
+        <label htmlFor="report" className="block text-white mb-2">
+          Please provide details about the fire (max 500 characters)
+        </label>
+        <textarea
+          id="report"
+          value={reportText}
+          onChange={(e) => setReportText(e.target.value.slice(0, maxChars))}
+          className="w-full h-32 p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          placeholder="Describe the fire, its location, size, and any other important details..."
+        />
+        <div className="flex justify-between items-center mt-1">
+          <div className="text-gray-400 text-sm">
+            <p className="font-semibold">Emergency Hotlines:</p>
+            <p>Fire Department: <span className="text-orange-400">911</span></p>
+            <p>Forest Service: <span className="text-orange-400">1-800-832-1355</span></p>
+          </div>
+          <p className="text-gray-400 text-sm">
             {reportText.length}/{maxChars} characters
           </p>
         </div>
+      </div>
+
+
+
+
         
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
-            disabled={reportText.trim().length === 0}
-          >
-            Submit Report
-          </button>
+        <div className="flex flex-col space-y-4 mt-4">
+          <p className="text-gray-400 text-sm text-center">
+            By submitting this report, you agree to share your location and the details of the fire with our team.
+          </p>
+          
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 w-32 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-6 py-2 w-32 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+              disabled={reportText.trim().length === 0}
+            >
+              Submit Report
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>
