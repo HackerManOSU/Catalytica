@@ -7,7 +7,7 @@ type MapState = {
   currentSeverity: number | null;
   currentPopulation: number | null;
   currentWeather: string | null;
-  totalAcresBurned: number | null;
+  totalactiveFires: number | null;
   selectedRegion: string | null;
   currentWindSpeed: number | null;
   currentHumidity: number | null;
@@ -19,7 +19,7 @@ type MapAction =
   | { type: 'SET_CURRENT_LATITUDE'; payload: number }
   | { type: 'SET_CURRENT_SEVERITY'; payload: number }
   | { type: 'SET_CURRENT_POPULATION'; payload: number }
-  | { type: 'SET_TOTAL_ACRES_BURNED'; payload: number }
+  | { type: 'SET_TOTAL_ACTIVE_FIRES'; payload: number }
   | { type: 'SET_SELECTED_REGION'; payload: string }
   | { type: 'SET_CURRENT_WEATHER'; payload: string }
   | { type: 'SET_CURRENT_WIND_SPEED'; payload: number }
@@ -37,7 +37,7 @@ const getInitialState = (): MapState => {
       currentSeverity: null,
       currentPopulation: null,
       currentWeather: null,
-      totalAcresBurned: null,
+      totalactiveFires: null,
       selectedRegion: null,
       currentWindSpeed: null,
       currentHumidity: null,
@@ -51,7 +51,7 @@ const getInitialState = (): MapState => {
       currentSeverity: null,
       currentPopulation: null,
       currentWeather: null,
-      totalAcresBurned: null,
+      totalactiveFires: null,
       selectedRegion: null,
       currentWindSpeed: null,
       currentHumidity: null,
@@ -71,8 +71,8 @@ function mapReducer(state: MapState, action: MapAction): MapState {
       return { ...state, currentSeverity: action.payload };
     case 'SET_CURRENT_POPULATION':
       return { ...state, currentPopulation: action.payload };
-    case 'SET_TOTAL_ACRES_BURNED':
-      return { ...state, totalAcresBurned: action.payload };
+    case 'SET_TOTAL_ACTIVE_FIRES':
+      return { ...state, totalactiveFires: action.payload };
     case 'SET_SELECTED_REGION':
       return { ...state, selectedRegion: action.payload };
     case 'SET_CURRENT_WEATHER':
@@ -147,9 +147,9 @@ export const MapActions = {
     type: 'SET_CURRENT_POPULATION' as const,
     payload: population
   }),
-  setTotalAcresBurned: (acres: number) => ({
-    type: 'SET_TOTAL_ACRES_BURNED' as const,
-    payload: acres
+  setTotalactiveFires: (fires: number) => ({
+    type: 'SET_TOTAL_ACTIVE_FIRES' as const,
+    payload: fires
   }),
   setSelectedRegion: (region: string) => ({
     type: 'SET_SELECTED_REGION' as const,

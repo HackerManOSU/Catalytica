@@ -1,0 +1,43 @@
+2025-04-06T03:55:01.162913Z I scheduledfirmsupdate: 
+2025-04-06T03:55:04.838283Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T03:55:04.838972Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T03:55:04.839159Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T03:56:01.368418Z I scheduledfirmsupdate: 
+2025-04-06T03:56:04.294303Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T03:56:04.294415Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T03:56:04.294525Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T03:57:05.314087Z I scheduledfirmsupdate: 
+2025-04-06T03:57:09.433492Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T03:57:09.433750Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T03:57:09.433995Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T03:58:01.460493Z I scheduledfirmsupdate: 
+2025-04-06T03:58:04.471758Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T03:58:04.471891Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T03:58:04.471981Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T03:59:00.997404Z I scheduledfirmsupdate: 
+2025-04-06T03:59:03.988997Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T03:59:03.989232Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T03:59:03.989428Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T04:00:01.514354Z I scheduledfirmsupdate: 
+2025-04-06T04:00:05.078277Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T04:00:05.078370Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T04:00:05.078501Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T04:01:01.103724Z I scheduledfirmsupdate: 
+2025-04-06T04:01:04.155241Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T04:01:04.155310Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T04:01:04.155386Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
+2025-04-06T04:01:58.056201213Z N scheduledFIRMSUpdate: {"@type":"type.googleapis.com/google.cloud.audit.AuditLog","status":{},"authenticationInfo":{"principalEmail":"kabirr@oregonstate.edu","principalSubject":"user:kabirr@oregonstate.edu"},"requestMetadata":{"callerIp":"128.193.154.235","callerSuppliedUserAgent":"FirebaseCLI/14.1.0,gzip(gfe),gzip(gfe)","requestAttributes":{"time":"2025-04-06T04:01:57.338304271Z","auth":{}},"destinationAttributes":{}},"serviceName":"cloudfunctions.googleapis.com","methodName":"google.cloud.functions.v2.FunctionService.UpdateFunction","authorizationInfo":[{"resource":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate","permission":"cloudfunctions.functions.update","granted":true,"resourceAttributes":{"service":"cloudfunctions.googleapis.com","name":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate","type":"cloudfunctions.googleapis.com/Function"},"permissionType":"ADMIN_WRITE"}],"resourceName":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate","request":{"@type":"type.googleapis.com/google.cloud.functions.v2.UpdateFunctionRequest","function":{"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"56fd125265cfae2a0c9b4da9043414ee5f245bfe","deployment-scheduled":"true"},"build_config":{"source":{},"source_token":"Cldwcm9qZWN0cy84OTE1NDYzODY0MDkvbG9jYXRpb25zL3VzLWNlbnRyYWwxL2J1aWxkcy9mZjYzZWRhMS0wMTQwLTQ5OTQtYjVkZC0zZDk0ZjQzZjlkOGISfXVzLWNlbnRyYWwxLWRvY2tlci5wa2cuZGV2L2NhdGFseXRpY2EtYjhhZDkvZ2NmLWFydGlmYWN0cy9jYXRhbHl0aWNhLS1iOGFkOV9fdXMtLWNlbnRyYWwxX19zY2hlZHVsZWRfd2VhdGhlcl91cGRhdGU6dmVyc2lvbl8xGOn/uKL5GSJQcHJvamVjdHMvY2F0YWx5dGljYS1iOGFkOS9sb2NhdGlvbnMvdXMtY2VudHJhbDEvZnVuY3Rpb25zL3NjaGVkdWxlZFdlYXRoZXJVcGRhdGUqDAiy+ce/BhDQ/L2cAzIIbm9kZWpzMjI6dgojZ2NyLmlvL2dhZS1ydW50aW1lcy9ub2RlanMyMjpzdGFibGUST3VzLWNlbnRyYWwxLWRvY2tlci5wa2cuZGV2L3NlcnZlcmxlc3MtcnVudGltZXMvZ29vZ2xlLTIyLWZ1bGwvcnVudGltZXMvbm9kZWpzMjJAAQ==","entry_point":"scheduledFIRMSUpdate","runtime":"nodejs22"},"service_config":{"max_instance_request_concurrency":80,"available_cpu":"1","available_memory":"256Mi"},"name":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate"},"update_mask":{"paths":["name","build_config.runtime","build_config.entry_point","build_config.source.storage_source.bucket","build_config.source.storage_source.object","build_config.environment_variables","build_config.source_token","service_config.environment_variables","service_config.ingress_settings","service_config.timeout_seconds","service_config.service_account_email","service_config.available_memory","service_config.min_instance_count","service_config.max_instance_count","service_config.max_instance_request_concurrency","service_config.available_cpu","service_config.vpc_connector","service_config.vpc_connector_egress_settings","labels","build_config.build_environment_variables"]}},"response":{"@type":"type.googleapis.com/google.longrunning.Operation"},"resourceLocation":{"currentLocations":["us-central1"]}}
+2025-04-06T04:02:05.184785Z I scheduledfirmsupdate: 
+2025-04-06T04:02:05.545999Z I scheduledfirmsupdate: Default STARTUP TCP probe succeeded after 1 attempt for container "worker" on port 8080.
+2025-04-06T04:02:07.246973217Z N scheduledFIRMSUpdate: {"@type":"type.googleapis.com/google.cloud.audit.AuditLog","status":{},"authenticationInfo":{"principalEmail":"kabirr@oregonstate.edu","principalSubject":"user:kabirr@oregonstate.edu"},"requestMetadata":{"requestAttributes":{},"destinationAttributes":{}},"serviceName":"cloudfunctions.googleapis.com","methodName":"google.cloud.functions.v2.FunctionService.UpdateFunction","resourceName":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate","response":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","environment":"GEN_2","satisfiesPzi":true,"buildConfig":{"entryPoint":"scheduledFIRMSUpdate","automaticUpdatePolicy":{},"dockerRegistry":"ARTIFACT_REGISTRY","source":{},"dockerRepository":"projects/catalytica-b8ad9/locations/us-central1/repositories/gcf-artifacts","runtime":"nodejs22","serviceAccount":"projects/catalytica-b8ad9/serviceAccounts/891546386409-compute@developer.gserviceaccount.com"},"labels":{"firebase-functions-hash":"56fd125265cfae2a0c9b4da9043414ee5f245bfe","deployment-tool":"cli-firebase","deployment-scheduled":"true"},"state":"ACTIVE","name":"projects/catalytica-b8ad9/locations/us-central1/functions/scheduledFIRMSUpdate","createTime":"2025-04-06T03:52:36.518715776Z","updateTime":"2025-04-06T04:01:58.044408854Z","serviceConfig":{"availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1","revision":"scheduledfirmsupdate-00002-din","allTrafficOnLatestRevision":true,"maxInstanceCount":100,"serviceAccountEmail":"891546386409-compute@developer.gserviceaccount.com","ingressSettings":"ALLOW_ALL","uri":"https://scheduledfirmsupdate-3hh4vknqzq-uc.a.run.app","timeoutSeconds":60},"url":"https://us-central1-catalytica-b8ad9.cloudfunctions.net/scheduledFIRMSUpdate"},"resourceLocation":{"currentLocations":["us-central1"]}}
+2025-04-06T04:02:08.512477Z ? scheduledfirmsupdate: Received and parsed 0 FIRMS data points
+
+2025-04-06T04:02:08.512560Z I scheduledfirmsupdate: Fetched FIRMS data: []
+2025-04-06T04:02:08.512644Z W scheduledfirmsupdate: No FIRMS data returned. Skipping Firestore write.
