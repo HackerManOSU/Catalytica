@@ -4,13 +4,12 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
-import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
-import { MapActions } from '../utils/mapstate'; // Import map actions
+import { useMapDispatch, useMapState } from '../utils/mapstate';
+import { MapActions } from '../utils/mapstate';
 import './border.css';
 
-// Define props interface for the Map component
 interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
+  center?: [number, number];
   zoom?: number;
   markers?: Array<{
     position: [number, number];
@@ -25,7 +24,6 @@ const USMap = ({
   markers = [],
   fullscreen = false
 }: MapProps) => {
-  // Create a reference to store the map instance
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
@@ -36,12 +34,20 @@ const USMap = ({
   const MapState = useMapState();
   const [mapReady, setMapReady] = useState<boolean>(false);
 
-  // Fetch FIRMS data only once when component mounts
+  // Function to handle coordinates update
+  const handleCoordinateUpdate = (lat: number, lng: number) => {
+    mapDispatch(MapActions.setCurrentLatitude(lat));
+    mapDispatch(MapActions.setCurrentLongitude(lng));
+    console.log(`Clicked coordinates: ${lat}, ${lng}`);
+    console.log(MapState.currentLatitude, MapState.currentLongitude);
+    L.marker([lat, lng]).addTo(mapRef.current!);
+  };
+
+  // Fetch FIRMS data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch fire data
         const data = await fetchRecentFIRMSData();
         setFirmsData(data);
         setError(null);
@@ -52,67 +58,54 @@ const USMap = ({
     };
 
     fetchData();
-  }, []); // Empty dependency array - fetch only once
+  }, []);
 
-  // Update the map size when fullscreen changes
+  // map initialization
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // After the container resizes due to fullscreen change,
-    // recalculate map size and fit bounds again
     setTimeout(() => {
       mapRef.current?.invalidateSize();
-      
       const usBounds = L.latLngBounds(
-        [24.0, -125.0], // Southwest corner
-        [49.5, -66.0]   // Northeast corner
+        [24.0, -125.0],
+        [49.5, -66.0]
       );
-      
       mapRef.current?.fitBounds(usBounds, {
-        padding: [20, 20], // Add padding for better visualization
+        padding: [20, 20],
         animate: true
       });
     }, 100);
     
   }, [fullscreen]);
     
-  // Map initialization effect
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Define the contiguous US bounds
     const usBounds = L.latLngBounds(
-      [24.0, -125.0], // Southwest corner (southern tip of Florida to westernmost point)
-      [49.5, -66.0]   // Northeast corner (northern border to easternmost point)
+      [24.0, -125.0],
+      [49.5, -66.0]
     );
 
     mapRef.current = L.map(mapContainerRef.current, {
-      maxBounds: usBounds.pad(0.1), // Add 10% padding around the bounds to allow slight panning
-      maxBoundsViscosity: 1.0, // Prevent panning outside bounds
-      minZoom: 4, // Allow slightly more zoom out to see context
-      zoomSnap: 0.5, // Allow finer zoom increments for better fitting
+      maxBounds: usBounds.pad(0.1),
+      maxBoundsViscosity: 1.0,
+      minZoom: 4,
+      zoomSnap: 0.5,
     });
 
-    // Register click event
     mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
-      mapDispatch(MapActions.setCurrentLatitude(lat));
-      mapDispatch(MapActions.setCurrentLongitude(lng));
-      console.log(`Clicked coordinates: ${lat}, ${lng}`);
-      console.log(MapState.currentLatitude, MapState.currentLongitude);
-      L.marker([lat, lng]).addTo(mapRef.current!);
+      handleCoordinateUpdate(lat, lng);
     });
 
-    // Add the map tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
       maxZoom: 19
     }).addTo(mapRef.current);
 
-    // Fit the US bounds with padding for better visualization
     mapRef.current.fitBounds(usBounds, {
-      padding: [20, 20], // Add padding in pixels
-      animate: false // No animation on initial load
+      padding: [20, 20],
+      animate: false
     });
 
     return () => {
@@ -121,17 +114,23 @@ const USMap = ({
         mapRef.current = null;
       }
     };
-  }, []); // Empty dependency array for one-time initialization
-
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || !firmsData || firmsData.length === 0) return;
-
+  
     if (heatLayerRef.current) {
       mapRef.current.removeLayer(heatLayerRef.current);
       heatLayerRef.current = null;
     }
-
+  
+    // Clear any existing fire markers
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.CircleMarker) {
+        mapRef.current?.removeLayer(layer);
+      }
+    });
+  
     try {
       let firePoints: FIRMSData[] = [];
       
@@ -153,74 +152,203 @@ const USMap = ({
           }
         }
       }
-
+  
       if (firePoints.length === 0) {
         console.error("Could not extract valid fire data points from API response");
         return;
       }
-
+  
+      // Filter points within US boundaries
       const usPoints = firePoints.filter(point => 
         typeof point.latitude === 'number' && 
         typeof point.longitude === 'number' && 
         typeof point.frp === 'number' &&
-        point.latitude > 24.0 && // Southern border of continental US
-        point.latitude < 49.5 && // Northern border of continental US
-        point.longitude > -125.0 && // Western border of continental US
-        point.longitude < -66.0 // Eastern border of continental US
+        point.latitude > 24.0 &&
+        point.latitude < 49.5 &&
+        point.longitude > -125.0 &&
+        point.longitude < -66.0
       );
-
-      const heatData = usPoints.map(point => {
-        const intensity = Math.max(point.frp / 10, 0.5);
+  
+      // Define FRP thresholds
+      const FRP_LOW = 100;      // Normal fires
+      const FRP_MEDIUM = 400;   // Medium fires
+      const FRP_HIGH = 800;    // High fires
+      const FRP_EXTREME = 1500; // Extreme fires
+  
+      // Separate fires by FRP categories
+      const lowFRPPoints = usPoints.filter(point => point.frp < FRP_LOW);
+      const mediumFRPPoints = usPoints.filter(point => point.frp >= FRP_LOW && point.frp < FRP_HIGH);
+      const highFRPPoints = usPoints.filter(point => point.frp >= FRP_HIGH && point.frp < FRP_EXTREME);
+      const extremeFRPPoints = usPoints.filter(point => point.frp >= FRP_EXTREME);
+  
+      // Map low FRP fires for the heat layer
+      const heatData = lowFRPPoints.map(point => {
+        const frp = point.frp || 0;
+        const intensity = Math.max(0.5, Math.min(5, frp / 100)); // Lower max intensity for small fires
         return [point.latitude, point.longitude, intensity];
       });
-
-      console.log(`Creating US heatmap with ${heatData.length} fire points`);
+  
+      console.log(`Creating US heatmap with ${heatData.length} low FRP fire points`);
       
+      // Create heat layer for low FRP fires
       heatLayerRef.current = L.heatLayer(heatData as [number, number, number][], {
         radius: 25,
         blur: 15,
         maxZoom: 10,
         max: 10,
         gradient: {
-          0.1: '#89CFF0',
-          0.3: '#00FF00',
+          0.1: '#87CEFA',
+          0.3: '#98FB98',
           0.5: '#FFFF00',
-          0.7: '#FFA500',
-          0.9: '#FF0000'
+          0.6: '#FFA500',
+          0.7: '#FF4500',
+          0.8: '#FF0000',
+          0.9: '#8B0000'
         }
       }).addTo(mapRef.current);
       
-      // Add a 2 second artificial delay to ensure everything renders properly
+      // Add medium FRP fires as orange markers
+      mediumFRPPoints.forEach(point => {
+        const baseRadius = 10 + (point.frp / 100);
+        const circleMarker = L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius,
+          fillColor: '#FFA500', // Orange
+          color: '#FFA500',
+          weight: 1,
+          fillOpacity: 0.7,
+          interactive: true
+        }).bindPopup(`<strong>Fire</strong><br>FRP: ${point.frp.toFixed(1)} MW`)
+          .addTo(mapRef.current!);
+          
+        // Add click handler for medium FRP markers
+        circleMarker.on('click', function(e) {
+          // Stop propagation to prevent the map's click event from firing
+          L.DomEvent.stopPropagation(e);
+          
+          const { lat, lng } = e.target.getLatLng();
+          handleCoordinateUpdate(lat, lng);
+        });
+      });
+      
+      // Add high FRP fires as bright red markers with radius based on FRP
+      highFRPPoints.forEach(point => {
+        // Calculate radius based on FRP value
+        const baseRadius = 20 + (point.frp / 100); 
+        
+        // Create the main bright red marker
+        const mainMarker = L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius,
+          fillColor: '#FF0000', // Bright Red
+          color: '#FF0000',
+          weight: 1,
+          fillOpacity: 0.8,
+          interactive: true
+        }).bindPopup(`<strong>Major Fire</strong><br>FRP: ${point.frp.toFixed(1)} MW`)
+          .addTo(mapRef.current!);
+          
+        // Add click handler for high FRP markers
+        mainMarker.on('click', function(e) {
+          L.DomEvent.stopPropagation(e);
+          const { lat, lng } = e.target.getLatLng();
+          handleCoordinateUpdate(lat, lng);
+        });
+          
+        // Add a pulsing effect with a second marker
+        L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius * 1.5,
+          fillColor: '#FF0000',
+          color: '#FF0000',
+          weight: 0.5,
+          fillOpacity: 0.3,
+          className: 'pulse-marker',
+          interactive: false
+        }).addTo(mapRef.current!);
+      });
+      
+      // For extreme FRP fires, add multiple concentric markers to increase visibility at any zoom level
+      extremeFRPPoints.forEach(point => {
+        // Base radius calculation with higher factor for extreme fires
+        const baseRadius = 30 + (point.frp / 500);
+        
+        // Track the main interactive circle
+        let mainCircle: L.CircleMarker | null = null;
+        
+        // Add multiple concentric circles with decreasing opacity
+        for (let i = 0; i < 4; i++) {
+          const radiusMultiplier = 1 + (i * 0.5); // 1, 1.5, 2, 2.5
+          const opacityDivisor = 1 + i; // 1, 2, 3, 4
+          
+          const circleMarker = L.circleMarker([point.latitude, point.longitude], {
+            radius: baseRadius * radiusMultiplier,
+            fillColor: '#FF0000', // Bright Red
+            color: i === 0 ? '#FFFFFF' : '#FF0000', // White border for main circle
+            weight: i === 0 ? 1.5 : 0.5,
+            fillOpacity: 0.8 / opacityDivisor,
+            interactive: i === 0 // Only the center circle is interactive
+          }).addTo(mapRef.current!);
+          
+          if (i === 0) {
+            mainCircle = circleMarker;
+            
+            // Add click handler for the main extreme FRP marker
+            circleMarker.on('click', function(e) {
+              L.DomEvent.stopPropagation(e);
+              const { lat, lng } = e.target.getLatLng();
+              handleCoordinateUpdate(lat, lng);
+            });
+          }
+        }
+        
+        // Add a pulsing effect marker
+        L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius * 3,
+          fillColor: '#FF3300',
+          color: '#FF3300',
+          weight: 0.5,
+          fillOpacity: 0.2,
+          className: 'pulse-marker',
+          interactive: false
+        }).addTo(mapRef.current!);
+        
+        // Add popup to the main circle
+        if (mainCircle) {
+          mainCircle.bindPopup(`
+            <div style="text-align:center;">
+              <h3 style="color:#FF0000;font-weight:bold;margin:0;">EXTREME FIRE</h3>
+              <p style="margin:5px 0;"><strong>FRP:</strong> ${point.frp.toFixed(1)} MW</p>
+              <p style="margin:5px 0;font-size:11px;">Latitude: ${point.latitude.toFixed(5)}</p>
+              <p style="margin:5px 0;font-size:11px;">Longitude: ${point.longitude.toFixed(5)}</p>
+            </div>
+          `);
+        }
+      });
+      
       setTimeout(() => {
         setLoading(false);
         setMapReady(true);
       }, 2000);
-
+  
     } catch (error) {
       console.error("Error creating heatmap:", error);
       setError("Error creating heatmap visualization");
       setLoading(false);
     }
-  }, [firmsData]); // Only depend on firmsData
+  }, [firmsData]);
 
-
-
-  // Effect to add/update markers when markers prop changes
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Clear existing markers
+    // Clear user-added markers (but not fire markers)
     mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+      if (layer instanceof L.Marker) {
         mapRef.current?.removeLayer(layer);
       }
     });
 
-    // Add new markers
     markers.forEach(marker => {
       const severity = marker.severity;
       const color = severity > 7 ? '#FF3B30' : severity > 4 ? '#FF9500' : '#FFCC00';
-      const radius = Math.max(8, severity * 3); // Minimum size with scaling
+      const radius = Math.max(8, severity * 3);
       
       const circleMarker = L.circleMarker(marker.position, {
         radius,
@@ -229,10 +357,16 @@ const USMap = ({
         weight: 2,
         opacity: 1,
         fillOpacity: 0.8,
-        className: 'pulse-marker' // We'll add animation
+        className: 'pulse-marker'
       }).addTo(mapRef.current!);
       
-      // Enhanced popup
+      // Add click handler for custom markers
+      circleMarker.on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        const { lat, lng } = e.target.getLatLng();
+        handleCoordinateUpdate(lat, lng);
+      });
+      
       if (marker.details) {
         circleMarker.bindPopup(
           `<div class="popup-content">
@@ -248,7 +382,6 @@ const USMap = ({
       }
     });
   }, [markers]);
-
 
   return (
     <div className="relative">
@@ -271,7 +404,7 @@ const USMap = ({
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
           border: '3px solid rgb(251, 146, 60)',
           overflow: 'hidden',
-          visibility: mapReady ? 'visible' : 'hidden' // Show the map when it’s ready
+          visibility: mapReady ? 'visible' : 'hidden'
         }} 
         className="map-container border-radar" 
       />
