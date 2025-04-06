@@ -21,7 +21,7 @@ interface MapProps {
 
 const HawaiiMap = ({ 
   center = [20.7984, -156.3319], // Center of Hawaii
-  zoom = 6,
+  zoom = 5.25,
   markers = [],
   fullscreen = false
 }: MapProps) => {
@@ -35,9 +35,6 @@ const HawaiiMap = ({
   const [mapReady, setMapReady] = useState<boolean>(false);
   const mapDispatch = useMapDispatch();
   const MapState = useMapState();
-
-
-
 
   // Fetch FIRMS data (do not clear loading here)
   useEffect(() => {
@@ -71,7 +68,7 @@ const HawaiiMap = ({
       zoom,
       maxBounds: hawaiiBounds,
       maxBoundsViscosity: 1.0,
-      minZoom: 3
+      minZoom: 5.25
     }).setView(center, zoom);
 
     mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
