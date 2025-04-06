@@ -13,22 +13,14 @@ interface MapProps {
     severity: number;
     details?: string;
   }>;
-}
-// Define props interface for the Map component
-interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
-  zoom?: number;
-  markers?: Array<{
-    position: [number, number];
-    severity: number;
-    details?: string;
-  }>;
+  fullscreen?: boolean;
 }
 
-const hawaiiMap = ({ 
-  center = [37.8, -96], // Default center of USA
-  zoom = 4.5,
-  markers = [] 
+const AlaskaMap = ({ 
+  center = [64.2008, -149.4937], // Center of Alaska
+  zoom = 4,
+  markers = [],
+  fullscreen = false
 }: MapProps) => {
   // Create a reference to store the map instance
   const mapRef = useRef<L.Map | null>(null);
@@ -38,41 +30,18 @@ const hawaiiMap = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-
   // Fetch FIRMS data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch 3 days of fire data
+        // Fetch fire data - use the same parameter as USMap
         const data = await fetchRecentFIRMSData(1000);
         setFirmsData(data);
         setError(null);
       } catch (error) {
         console.error("Failed to fetch FIRMS data:", error);
-        setError("Failed to fetch wildfire data. Using fallback data.");
-        
-        // Fallback to mock data if API fails
-        const mockData: FIRMSData[] = [
-          // California wildfires
-          { latitude: 37.7749, longitude: -122.4194, brightness: 340.5, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 95, bright_t31: 290.5, frp: 45.2 },
-          { latitude: 34.0522, longitude: -118.2437, brightness: 320.8, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 90, bright_t31: 285.6, frp: 36.7 },
-          { latitude: 36.7783, longitude: -119.4179, brightness: 355.2, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 98, bright_t31: 298.1, frp: 52.3 },
-          
-          // Oregon wildfires
-          { latitude: 45.5152, longitude: -122.6784, brightness: 330.1, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 88, bright_t31: 280.9, frp: 30.5 },
-          { latitude: 44.0582, longitude: -121.3153, brightness: 335.4, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 92, bright_t31: 282.7, frp: 33.8 },
-          
-          // Colorado wildfires
-          { latitude: 39.7392, longitude: -104.9903, brightness: 315.6, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 85, bright_t31: 275.2, frp: 28.9 },
-          { latitude: 38.8339, longitude: -104.8214, brightness: 325.7, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 87, bright_t31: 278.4, frp: 31.2 },
-          
-          // Texas wildfires
-          { latitude: 31.9686, longitude: -99.9018, brightness: 338.3, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 93, bright_t31: 286.8, frp: 35.1 },
-          { latitude: 32.7767, longitude: -96.7970, brightness: 318.9, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 86, bright_t31: 277.3, frp: 29.4 }
-        ];
-        
-        setFirmsData(mockData);
+        setError("Failed to fetch wildfire data.");
       } finally {
         setLoading(false);
       }
@@ -85,19 +54,30 @@ const hawaiiMap = ({
     // Initialize map only once when component mounts
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Create Leaflet map instance without US boundaries
+    // Define Alaska bounds
+    const alaskaBounds = L.latLngBounds(
+      [51.0, -180.0], // Southwest corner
+      [71.5, -129.0]  // Northeast corner
+    );
+
+    // Create Leaflet map instance with Alaska boundaries
     mapRef.current = L.map(mapContainerRef.current, {
       center,
       zoom,
-      minZoom: 2 // Prevent extreme zoom out
+      maxBounds: alaskaBounds,
+      maxBoundsViscosity: 1.0,
+      minZoom: 3
     }).setView(center, zoom);
 
-    // Add OpenStreetMap tile layer
+    // Add dark-themed tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
-      maxZoom: 19
+      maxZoom: 19,
+      bounds: alaskaBounds
     }).addTo(mapRef.current);
+
+    // Initially fit the map to Alaska bounds
+    mapRef.current.fitBounds(alaskaBounds);
 
     // Cleanup function to remove map when component unmounts
     return () => {
@@ -147,27 +127,31 @@ const hawaiiMap = ({
         console.error("Could not extract valid fire data points from API response");
         return;
       }
-  
-      // Filter out any invalid data points
-      const validPoints = firePoints.filter(point => 
+      
+      // Filter to only show Alaska wildfires
+      const alaskaPoints = firePoints.filter(point => 
         typeof point.latitude === 'number' && 
         typeof point.longitude === 'number' && 
-        typeof point.frp === 'number'
+        typeof point.frp === 'number' &&
+        point.latitude > 51.0 && 
+        point.latitude < 71.5 &&
+        point.longitude < -129.0 && 
+        point.longitude > -180.0
       );
   
       // Convert FIRMS data to heatmap format [lat, lng, intensity]
-      const heatData = validPoints.map(point => {
+      const heatData = alaskaPoints.map(point => {
         // Use frp (Fire Radiative Power) as intensity, with a minimum value
         const intensity = Math.max(point.frp / 10, 0.5); // Ensure minimum visibility
         return [point.latitude, point.longitude, intensity];
       });
   
       if (heatData.length === 0) {
-        console.warn("No valid heat points to display");
+        console.warn("No valid heat points to display for Alaska");
         return;
       }
   
-      console.log(`Creating heatmap with ${heatData.length} fire points`);
+      console.log(`Creating Alaska heatmap with ${heatData.length} fire points`);
       
       // Create and add the heatmap layer
       heatLayerRef.current = L.heatLayer(heatData as [number, number, number][], {
@@ -233,68 +217,34 @@ const hawaiiMap = ({
     });
   }, [markers]);
 
-  useEffect(() => {
-    // Add custom CSS to the head
-    const style = document.createElement('style');
-    style.textContent = `
-      .pulse-marker {
-        animation: pulse 1.5s infinite;
-      }
-      
-      @keyframes pulse {
-        0% {
-          opacity: 0.7;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 1;
-          transform: scale(1.3);
-        }
-        100% {
-          opacity: 0.7;
-          transform: scale(1);
-        }
-      }
-      
-      .custom-popup .leaflet-popup-content-wrapper {
-        background-color: rgba(0, 0, 0, 0.8);
-        color: white;
-        border-radius: 8px;
-        padding: 5px;
-      }
-      
-      .custom-popup .leaflet-popup-tip {
-        background-color: rgba(0, 0, 0, 0.8);
-      }
-      
-      .map-container {
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-      }
-      
-      .map-container:hover {
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   return (
-    <div 
-      ref={mapContainerRef} 
-      style={{ 
-        height: '100%', 
-        width: '100%',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        margin: '0 auto' // This centers the div horizontally
-      }} 
-    />
+    <div className="relative">
+      {loading && (
+        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+          <div className="p-4 bg-gray-800 rounded-lg">
+            <p>Loading wildfire data...</p>
+          </div>
+        </div>
+      )}
+      {error && (
+        <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
+          {error}
+        </div>
+      )}
+      <div 
+        ref={mapContainerRef} 
+        style={{ 
+          height: fullscreen ? 'calc(100vh - 48px)' : '280px',
+          width: '100%',
+          borderRadius: '12px',
+          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          overflow: 'hidden'
+        }} 
+        className="map-container" 
+      />
+    </div>
   );
 };
 
-export default hawaiiMap;
+export default AlaskaMap;

@@ -141,7 +141,26 @@ function getFallbackMockData(): FIRMSData[] {
     
     // Arizona wildfires
     { latitude: 33.4484, longitude: -112.0740, brightness: 345.8, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 96, bright_t31: 292.3, frp: 48.6 },
-    { latitude: 32.2226, longitude: -110.9747, brightness: 333.4, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 91, bright_t31: 284.9, frp: 37.2 }
+    { latitude: 32.2226, longitude: -110.9747, brightness: 333.4, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 91, bright_t31: 284.9, frp: 37.2 },
+    
+    // Alaska wildfires - covering main regions based on census areas
+    { latitude: 64.8401, longitude: -147.7200, brightness: 328.5, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 89, bright_t31: 281.3, frp: 38.7 }, // Fairbanks
+    { latitude: 61.2181, longitude: -149.9003, brightness: 337.2, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 92, bright_t31: 285.7, frp: 41.5 }, // Anchorage
+    { latitude: 55.3422, longitude: -131.6461, brightness: 315.8, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 84, bright_t31: 273.1, frp: 27.9 }, // Ketchikan
+    { latitude: 60.5544, longitude: -151.2583, brightness: 322.7, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 88, bright_t31: 279.5, frp: 32.4 }, // Kenai Peninsula
+    { latitude: 64.0489, longitude: -139.4927, brightness: 331.6, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 90, bright_t31: 284.2, frp: 36.8 }, // Interior
+    { latitude: 65.6591, longitude: -155.4644, brightness: 341.3, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 95, bright_t31: 289.8, frp: 44.3 }, // Yukon-Koyukuk
+    { latitude: 61.5816, longitude: -159.5431, brightness: 335.8, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 91, bright_t31: 287.2, frp: 39.6 }, // Bethel
+    { latitude: 67.4805, longitude: -153.8936, brightness: 327.9, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 87, bright_t31: 280.1, frp: 35.9 }, // North Slope
+    
+    // Hawaii wildfires - covering main islands
+    { latitude: 21.3099, longitude: -157.8581, brightness: 321.4, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 87, bright_t31: 278.6, frp: 33.2 }, // Oahu (Honolulu)
+    { latitude: 20.7984, longitude: -156.3319, brightness: 336.7, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 93, bright_t31: 286.9, frp: 41.8 }, // Maui
+    { latitude: 19.8968, longitude: -155.5828, brightness: 348.9, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 96, bright_t31: 293.4, frp: 47.5 }, // Big Island (Hawaii County)
+    { latitude: 19.6332, longitude: -155.9392, brightness: 339.2, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 94, bright_t31: 290.1, frp: 43.7 }, // Big Island - Kona side
+    { latitude: 22.0964, longitude: -159.5261, brightness: 329.8, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 90, bright_t31: 282.7, frp: 37.9 }, // Kauai
+    { latitude: 21.1213, longitude: -156.9085, brightness: 318.3, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 85, bright_t31: 275.9, frp: 30.6 }, // Molokai
+    { latitude: 20.8783, longitude: -156.8896, brightness: 324.5, scan: 1, track: 1, acq_date: "2024-07-15", acq_time: "0400", confidence: 88, bright_t31: 280.4, frp: 35.2 }  // Lanai
   ];
   
   // Add some dynamic variation to the data for a more realistic demo
