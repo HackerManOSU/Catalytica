@@ -1,12 +1,9 @@
 import { motion } from 'framer-motion';
-import {useState, useEffect} from 'react';
-import { MapActions, useMapState,  useMapDispatch } from '../utils/mapstate'; // Import the map dispatch
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import {useState, useEffect, useCallback} from 'react';
+import { MapActions, useMapState,  useMapDispatch } from './mapstate'; // Import the map dispatch
 import ReportFireModal from './ReportFireModal';
-import { db } from '../../Lib/firebase';
 import Recommendation from './Recommendation';
-
-
+import { getFIRMS, FIRMSData } from '../../services/firmsService';
 
 function haversineDistance(
     lat1: number, 
@@ -25,7 +22,10 @@ function haversineDistance(
     return R * c;
   }
 
-const Speedometer: React.FC<{ value: number }> = ({ value }) => {
+  const Speedometer: React.FC<{ value: number }> = ({ value }) => {
+    const arcLength = 283; // Length of the arc (half of the circle's circumference)
+    const offset = (1 - value / 10) * arcLength; // Adjusted for a 0–10 scale
+  
     return (
       <svg viewBox="0 0 200 100" width="250" height="200">
         {/* Background arc - full length */}
@@ -42,14 +42,13 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           fill="none" 
           stroke="#ff9966" 
           strokeWidth="20"
-          strokeDasharray="251.33"
-          strokeDashoffset={(1 - value / 100) * 251.33}
+          strokeDasharray={arcLength}
+          strokeDashoffset={offset}
           initial={false}
-          animate={{ strokeDashoffset: (1 - value / 100) * 251.33 }}
+          animate={{ strokeDashoffset: offset }}
           transition={{ duration: 0.6 }}
         />
-
-        
+  
         {/* Value text */}
         <text 
           x="100" 
@@ -58,23 +57,34 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           fontSize="30" 
           fill="#ff9966"
         >
-          {value}
+          {value.toFixed(1)}
         </text>
       </svg>
     );
   };
-
+  
 
   const Dashboard: React.FC = () => {
     const mapState = useMapState();
     const mapDispatch = useMapDispatch(); 
     const [showreportmodal, setshowreportmodal] = useState(false);
-
+  
     const scaledSeverity = mapState.currentSeverity
-    ? Math.min(10, 1 + (mapState.currentSeverity * 9) / 1000)
-    : 0;
+      ? (mapState.currentSeverity >= 1000 
+         ? 10 
+         : 1 + (mapState.currentSeverity * 9) / 1000)
+      : 0;
 
-    
+      const resetDashboardState = useCallback(() => {
+        mapDispatch(MapActions.setTotalactiveFires(0));
+        mapDispatch(MapActions.setCurrentWeather("No data"));
+        mapDispatch(MapActions.setCurrentTemperature(null));
+        mapDispatch(MapActions.setCurrentHumidity(null));
+        mapDispatch(MapActions.setCurrentWindSpeed(null));
+        mapDispatch(MapActions.setCurrentSeverity(0));
+        mapDispatch(MapActions.setSelectedRegion("None"));
+        mapDispatch(MapActions.setCurrentPopulation(0));
+      }, [mapDispatch]);
     
 
     useEffect(() => {
@@ -105,8 +115,7 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           return 0;
         }
       };
-      
-      
+    
       
       const fetchNearestCity = async (lat: number, lng: number) => {
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${import.meta.env.VITE_OPEN_CAGE_KEY}`;
@@ -114,69 +123,55 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
         const response = await fetch(url);
         const data = await response.json();
       
-        const city = data?.results?.[0]?.components?.city ||
+        const county = data?.results?.[0]?.components?.county ||
+                     data?.results?.[0]?.components?.city ||
                      data?.results?.[0]?.components?.town ||
                      data?.results?.[0]?.components?.village ||
-                     data?.results?.[0]?.components?.county ||
                      "Unknown";
-        return city;
+        const state = data?.results?.[0]?.components?.state_code || "Unknown State";
+        return county;
       };
       
       const fetchFirmsUpdates = async () => {
-        if (!mapState.currentLatitude || !mapState.currentLongitude) return;
-      
+        if (!mapState.currentLatitude || !mapState.currentLongitude) {
+          console.warn("Latitude or Longitude not set");
+          resetDashboardState();
+          return;
+        }
+
         try {
-          const firmsRef = collection(db, "firmsUpdates");
-          const snapshot = await getDocs(firmsRef);
+          // Use the imported service instead of direct Firestore calls
+          const firmsData = await getFIRMS();
+          
+          const allFires: FIRMSData[] = [];
       
-          const allFires: any[] = [];
+          // Filter fires based on distance criteria
+          firmsData.forEach(fireEntry => {
+            if (
+              typeof fireEntry.latitude === "number" &&
+              typeof fireEntry.longitude === "number" &&
+              fireEntry.weather
+            ) {
+              const distance = haversineDistance(
+                mapState.currentLatitude!,
+                mapState.currentLongitude!,
+                fireEntry.latitude,
+                fireEntry.longitude
+              );
+              const distanceMiles = distance * 0.621371;
       
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            console.log("DOC ID:", doc.id, "RAW DATA:", data);
-
-      
-            // For each field in the doc (like "0", "1", "2"...)
-            Object.values(data).forEach((entryGroup: any) => {
-              if (Array.isArray(entryGroup)) {
-                entryGroup.forEach((fireEntry: any) => {
-                  const hasWeather =
-                    fireEntry.weather &&
-                    typeof fireEntry.weather.temperature === "number" &&
-                    typeof fireEntry.weather.humidity === "number";
-            
-                  if (
-                    hasWeather &&
-                    typeof fireEntry.latitude === "number" &&
-                    typeof fireEntry.longitude === "number"
-                  ) {
-                    const distance = haversineDistance(
-                      mapState.currentLatitude!,
-                      mapState.currentLongitude!,
-                      fireEntry.latitude,
-                      fireEntry.longitude
-                    );
-                    const distanceMiles = distance * 0.621371;
-
-                    if (distanceMiles <= 25) {
-                      allFires.push({ ...fireEntry, distance: distanceMiles });
-                    }
-            
-                  } 
-                });
+              if (distanceMiles <= 25) {
+                allFires.push({ ...fireEntry, distance: distanceMiles });
               }
-            });
-            
-            
+            }
           });
       
           const filteredFires = allFires
-          .filter(f => !isNaN(f.distance) && f.distance <= 50); // Redundant but safe
-
-        const nearestFires = filteredFires
-          .sort((a, b) => a.distance - b.distance)
-          .slice(0, 50); // Optional: still only show the closest 10 within 50 miles
-
+            .filter(f => !isNaN(f.distance as number) && (f.distance as number) <= 50);
+      
+          const nearestFires = filteredFires
+            .sort((a, b) => (a.distance as number) - (b.distance as number))
+            .slice(0, 50);
       
           // Update global state
           mapDispatch(MapActions.setTotalactiveFires(nearestFires.length));
@@ -193,17 +188,20 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
             mapDispatch(MapActions.setSelectedRegion(city));
             const population = await fetchPopulationFromJSON(city);
             mapDispatch(MapActions.setCurrentPopulation(population));
-          }
-      
-          console.log("Nearest nested fire entries:", nearestFires);
-        } catch (error) {
-          console.error("Error fetching nested fire data:", error);
+            } else {
+              resetDashboardState();
+            }
+        
+            console.log("Nearest fires:", nearestFires);
+          } catch (error) {
+            console.error("Error fetching fire data:", error);
+            resetDashboardState();
         }
       };
       
     
       fetchFirmsUpdates();
-    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch]);
+    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch, resetDashboardState]);
     
   return (
     <motion.div
