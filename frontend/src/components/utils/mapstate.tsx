@@ -6,8 +6,12 @@ type MapState = {
   currentLatitude: number | null;
   currentSeverity: number | null;
   currentPopulation: number | null;
+  currentWeather: string | null;
   totalAcresBurned: number | null;
   selectedRegion: string | null;
+  currentWindSpeed: number | null;
+  currentHumidity: number | null;
+  currentTemperature: number | null;
 };
 
 type MapAction = 
@@ -17,6 +21,10 @@ type MapAction =
   | { type: 'SET_CURRENT_POPULATION'; payload: number }
   | { type: 'SET_TOTAL_ACRES_BURNED'; payload: number }
   | { type: 'SET_SELECTED_REGION'; payload: string }
+  | { type: 'SET_CURRENT_WEATHER'; payload: string }
+  | { type: 'SET_CURRENT_WIND_SPEED'; payload: number }
+  | { type: 'SET_CURRENT_HUMIDITY'; payload: number }
+  | { type: 'SET_CURRENT_TEMPERATURE'; payload: number }
   | { type: 'RESET_MAP_STATE' };
 
 // Get initial state from localStorage if available
@@ -28,8 +36,12 @@ const getInitialState = (): MapState => {
       currentLatitude: null,
       currentSeverity: null,
       currentPopulation: null,
+      currentWeather: null,
       totalAcresBurned: null,
       selectedRegion: null,
+      currentWindSpeed: null,
+      currentHumidity: null,
+      currentTemperature: null,
     };
   } catch (error) {
     console.error('Error loading map state from localStorage:', error);
@@ -38,8 +50,12 @@ const getInitialState = (): MapState => {
       currentLatitude: null,
       currentSeverity: null,
       currentPopulation: null,
+      currentWeather: null,
       totalAcresBurned: null,
       selectedRegion: null,
+      currentWindSpeed: null,
+      currentHumidity: null,
+      currentTemperature: null,
     };
   }
 };
@@ -59,6 +75,14 @@ function mapReducer(state: MapState, action: MapAction): MapState {
       return { ...state, totalAcresBurned: action.payload };
     case 'SET_SELECTED_REGION':
       return { ...state, selectedRegion: action.payload };
+    case 'SET_CURRENT_WEATHER':
+      return { ...state, currentWeather: action.payload };
+    case 'SET_CURRENT_WIND_SPEED':
+      return { ...state, currentWindSpeed: action.payload };
+    case 'SET_CURRENT_HUMIDITY':
+      return { ...state, currentHumidity: action.payload };
+    case 'SET_CURRENT_TEMPERATURE':
+      return { ...state, currentTemperature: action.payload };
     case 'RESET_MAP_STATE':
       return getInitialState();
     default:
@@ -130,6 +154,22 @@ export const MapActions = {
   setSelectedRegion: (region: string) => ({
     type: 'SET_SELECTED_REGION' as const,
     payload: region
+  }),
+  setCurrentWeather: (weather: string) => ({
+    type: 'SET_CURRENT_WEATHER' as const,
+    payload: weather
+  }),
+  setCurrentWindSpeed: (windSpeed: number) => ({
+    type: 'SET_CURRENT_WIND_SPEED' as const,
+    payload: windSpeed
+  }),
+  setCurrentHumidity: (humidity: number) => ({
+    type: 'SET_CURRENT_HUMIDITY' as const,
+    payload: humidity
+  }),
+  setCurrentTemperature: (temperature: number) => ({
+    type: 'SET_CURRENT_TEMPERATURE' as const,
+    payload: temperature
   }),
   resetMapState: () => ({ type: 'RESET_MAP_STATE' as const })
 };

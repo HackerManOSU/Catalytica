@@ -33,17 +33,12 @@ function App() {
     <div className="p-4 bg-[black] min-h-screen">
       {!alaskaFullscreen && !hawaiiFullscreen && !usFullscreen && (
         <>
-            <motion.div
-              className=" max-w-5xl mx-auto text-white mt-5"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            >
-              <h1 className="text-4xl font-bold mb-4">WildfireWatch</h1>
-              <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
-            </motion.div>
-          
-          <div className="max-w-5xl mx-auto bg-gray-800 rounded-lg p-4">
+          <motion.div className="max-w-5xl mx-auto bg-gray-800 rounded-lg p-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}>
+              <h1 className="text-4xl text-[white] font-bold mb-4">WildfireWatch</h1>
+              <p className="text-xl text-[white] mb-8">Real-time wildfire monitoring and resource allocation</p>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Left column for Alaska and Hawaii */}
               <div className="md:col-span-1 flex flex-col gap-6">
@@ -108,7 +103,7 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
           <div className="max-w-5xl mx-auto items-center justify-center mt-5 mb-5">
 
       <motion.div
