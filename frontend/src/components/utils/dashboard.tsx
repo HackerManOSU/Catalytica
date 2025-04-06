@@ -24,7 +24,7 @@ function haversineDistance(
   }
 
   const Speedometer: React.FC<{ value: number }> = ({ value }) => {
-    const arcLength = 251.33; // Length of the arc (half of the circle's circumference)
+    const arcLength = 283; // Length of the arc (half of the circle's circumference)
     const offset = (1 - value / 10) * arcLength; // Adjusted for a 0–10 scale
   
     return (
