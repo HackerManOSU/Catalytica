@@ -2,7 +2,9 @@ import { motion } from 'framer-motion';
 import {useState, useEffect} from 'react';
 import { MapActions, useMapState,  useMapDispatch } from '../utils/mapstate'; // Import the map dispatch
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import ReportFireModal from './ReportFireModal';
 import { db } from '../../Lib/firebase';
+import Recommendation from './Recommendation';
 
 function haversineDistance(
     lat1: number, 
@@ -33,13 +35,18 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
         />
         
         {/* Value arc */}
-        <path 
-          d={`M10 90 A80 80 0 0 1 190 90`}
+        <motion.path
+          d="M10 90 A80 80 0 0 1 190 90"
           fill="none" 
           stroke="#ff9966" 
           strokeWidth="20"
-          strokeDasharray={`${(value / 100) * 251.33}, 251.33`}
+          strokeDasharray="251.33"
+          strokeDashoffset={(1 - value / 100) * 251.33}
+          initial={false}
+          animate={{ strokeDashoffset: (1 - value / 100) * 251.33 }}
+          transition={{ duration: 0.6 }}
         />
+
         
         {/* Value text */}
         <text 
@@ -58,89 +65,127 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
   const Dashboard: React.FC = () => {
     const mapState = useMapState();
     const mapDispatch = useMapDispatch(); 
+    const [showreportmodal, setshowreportmodal] = useState(false);
+
+    
     
 
     useEffect(() => {
-        const fetchNearestData = async () => {
-            // Check if latitude and longitude are valid
-            if (!mapState.currentLatitude || !mapState.currentLongitude) return;
-    
-            try {
-                // Fetch from Firewatch collection
-                const firewatchRef = collection(db, 'Firewatch');
-                const firewatchSnapshot = await getDocs(firewatchRef);
-                
-                const nearestFires = firewatchSnapshot.docs
-                    .map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        distance: haversineDistance(
-                            mapState.currentLatitude!, 
-                            mapState.currentLongitude!, 
-                            doc.data().latitude, 
-                            doc.data().longitude
-                        )
-                    }))
-                    .sort((a, b) => a.distance - b.distance)
-                    .slice(0, 5); // Get 5 nearest fires
-    
-                // Fetch from WeatherUpdates collection
-                const weatherRef = collection(db, 'weatherUpdates');
-                const weatherSnapshot = await getDocs(weatherRef);
-                
-                const nearestWeather = weatherSnapshot.docs
-                    .map(doc => {
-                        const docData = doc.data();
-                        return {
-                            id: doc.id,
-                            ...docData,
-                            apiData: docData.data, // The OpenWeatherMap data is nested in 'data'
-                            timestamp: docData.timestamp,
-                            distance: docData.data?.coord ? haversineDistance(
-                                mapState.currentLatitude!, 
-                                mapState.currentLongitude!, 
-                                docData.data.coord.lat, 
-                                docData.data.coord.lon
-                            ) : NaN
-                        };
-                    })
-                    .filter(fire => fire.distance <= 100) // Optional: filter out entries with NaN distance
-                    .sort((a, b) => a.distance - b.distance)
-                    .slice(0, 5);
-                // Update global state with the nearest fire and weather data
-                if (nearestWeather[0]?.apiData) {
-                    mapDispatch(MapActions.setCurrentWeather(
-                        nearestWeather[0].apiData.weather[0]?.description || 'No weather data'
-                    ));
-                    mapDispatch(MapActions.setSelectedRegion(
-                        nearestWeather[0].apiData.name || 'No region data'
-                    ));
-                    mapDispatch(MapActions.setCurrentHumidity(
-                        nearestWeather[0].apiData.main?.humidity || 0
-                    ));
-                    mapDispatch(MapActions.setCurrentWindSpeed(
-                        nearestWeather[0].apiData.wind?.speed || 0
-                    ));
-                    mapDispatch(MapActions.setCurrentTemperature(
-                        nearestWeather[0].apiData.main?.temp || 0
-                    ));
-                }
-                console.log('Nearest Fires:', nearestFires);
+ 
+      const fetchPopulation = async (lat: number, lng: number): Promise<number> => {
+        const username = "anthony11111"; // 🔑 Replace with your real username
+        const url = `https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lng}&username=${username}`;
+      
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          const population = data?.geonames?.[0]?.population || 0;
+          console.log("👥 Population:", population);
+          return population;
+        } catch (err) {
+          console.error("GeoNames population fetch failed:", err);
+          return 0;
+        }
+      };
+      
+      
+      const fetchNearestCity = async (lat: number, lng: number) => {
+        const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${import.meta.env.VITE_OPEN_CAGE_KEY}`;
+      
+        const response = await fetch(url);
+        const data = await response.json();
+      
+        const city = data?.results?.[0]?.components?.city ||
+                     data?.results?.[0]?.components?.town ||
+                     data?.results?.[0]?.components?.village ||
+                     data?.results?.[0]?.components?.county ||
+                     "Unknown";
+        return city;
+      };
+      
+      const fetchFirmsUpdates = async () => {
+        if (!mapState.currentLatitude || !mapState.currentLongitude) return;
+      
+        try {
+          const firmsRef = collection(db, "firmsUpdates");
+          const snapshot = await getDocs(firmsRef);
+      
+          const allFires: any[] = [];
+      
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            console.log("DOC ID:", doc.id, "RAW DATA:", data);
 
+      
+            // For each field in the doc (like "0", "1", "2"...)
+            Object.values(data).forEach((entryGroup: any) => {
+              if (Array.isArray(entryGroup)) {
+                entryGroup.forEach((fireEntry: any) => {
+                  const hasWeather =
+                    fireEntry.weather &&
+                    typeof fireEntry.weather.temperature === "number" &&
+                    typeof fireEntry.weather.humidity === "number";
+            
+                  if (
+                    hasWeather &&
+                    typeof fireEntry.latitude === "number" &&
+                    typeof fireEntry.longitude === "number"
+                  ) {
+                    const distance = haversineDistance(
+                      mapState.currentLatitude!,
+                      mapState.currentLongitude!,
+                      fireEntry.latitude,
+                      fireEntry.longitude
+                    );
+                    const distanceMiles = distance * 0.621371;
+
+                    if (distanceMiles <= 100) {
+                      allFires.push({ ...fireEntry, distance: distanceMiles });
+                    }
+            
+                  } 
+                });
+              }
+            });
+            
+            
+          });
+      
+          const filteredFires = allFires
+          .filter(f => !isNaN(f.distance) && f.distance <= 50); // Redundant but safe
+
+        const nearestFires = filteredFires
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 50); // Optional: still only show the closest 10 within 50 miles
+
+      
+          // Update global state
+          mapDispatch(MapActions.setTotalactiveFires(nearestFires.length));
+      
+          if (nearestFires[0]) {
+            const closest = nearestFires[0];
+      
+            mapDispatch(MapActions.setCurrentWeather(closest.weather?.weather_desc || "No data"));
+            mapDispatch(MapActions.setCurrentTemperature(closest.weather?.temperature || 0));
+            mapDispatch(MapActions.setCurrentHumidity(closest.weather?.humidity || 0));
+            mapDispatch(MapActions.setCurrentWindSpeed(closest.weather?.wind_speed || 0));
+            mapDispatch(MapActions.setCurrentSeverity(closest.frp || 0));
+            const city = await fetchNearestCity(closest.latitude, closest.longitude);
+            mapDispatch(MapActions.setSelectedRegion(city));
+            const population = await fetchPopulation(closest.latitude, closest.longitude);
+            mapDispatch(MapActions.setCurrentPopulation(population));
+          }
+      
+          console.log("Nearest nested fire entries:", nearestFires);
+        } catch (error) {
+          console.error("Error fetching nested fire data:", error);
+        }
+      };
+      
     
-                if (nearestFires[0]) {
-                    mapDispatch(MapActions.setTotalactiveFires(
-                        nearestFires.length || 0
-                    ));
-                }
-    
-            } catch (error) {
-                console.error('Error fetching nearest data:', error);
-            }
-        };
-    
-        fetchNearestData();
+      fetchFirmsUpdates();
     }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch]);
+    
   return (
     <motion.div
       className="text-white w-full"
@@ -148,12 +193,20 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
+      <div className="flex justify-between mb-4">
       <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
+      <button onClick={()=>setshowreportmodal(true)} className="cursor-pointer group relative flex gap-1.5 px-8 py-4 bg-orange-500 bg-opacity-80 text-[#f1f1f1] rounded-3xl hover:bg-opacity-70 transition font-semibold shadow-md">
+        Report
+        <div className="absolute opacity-0 -bottom-full rounded-md py-2 px-2 bg-black bg-opacity-70 left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg">
+          Report
+        </div>
+      </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
-          <Speedometer value={90} />
+          <Speedometer value={+((mapState.currentSeverity || 0) * 10).toFixed(1)} />
           <p className="mt-4 text-orange-500 font-bold">Risk</p>
         </div>
 
@@ -193,17 +246,25 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           <h2 className="text-2xl font-semibold mb-4">Total Population</h2>
           <div className="flex flex-col ">
             <div>
-              <p className="text-5xl font-bold text-orange-500">4,250</p>
+              <p className="text-5xl font-bold text-orange-500">{mapState.currentPopulation || 0}</p>
               <p className="text-sm text-gray-400">People</p>
             </div>
-            <h2 className="text-2xl font-semibold mb-4 mt-4">Nearest City</h2>
+            <h2 className="text-2xl font-semibold mb-4 mt-4">Area</h2>
             <div>
               <p className="text-5xl font-bold text-orange-500">{mapState.selectedRegion || "None"}</p>
             </div>
           </div>
         </div>
       </div>
+
+      <Recommendation />
+
+      <ReportFireModal 
+        isOpen={showreportmodal} 
+        onClose={() => setshowreportmodal(false)} 
+      />
     </motion.div>
+    
   );
 };
 

@@ -4,7 +4,7 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 type MapState = {
   currentLongitude: number | null;
   currentLatitude: number | null;
-  currentSeverity: number | null;
+  currentSeverity: number | 0;
   currentPopulation: number | null;
   currentWeather: string | null;
   totalactiveFires: number | null;
@@ -34,7 +34,7 @@ const getInitialState = (): MapState => {
     return savedState ? JSON.parse(savedState) : {
       currentLongitude: null,
       currentLatitude: null,
-      currentSeverity: null,
+      currentSeverity: 0,
       currentPopulation: null,
       currentWeather: null,
       totalactiveFires: null,
@@ -48,7 +48,7 @@ const getInitialState = (): MapState => {
     return {
       currentLongitude: null,
       currentLatitude: null,
-      currentSeverity: null,
+      currentSeverity: 0,
       currentPopulation: null,
       currentWeather: null,
       totalactiveFires: null,
