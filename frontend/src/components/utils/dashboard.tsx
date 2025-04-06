@@ -269,7 +269,7 @@ function haversineDistance(
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
