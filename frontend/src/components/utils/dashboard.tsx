@@ -1,45 +1,38 @@
 import { motion } from 'framer-motion';
 
 const Speedometer: React.FC<{ value: number }> = ({ value }) => {
-  return (
-    <svg viewBox="0 0 200 100" width="250" height="200">
-      {/* Background arc */}
-      <path 
-        d="M10 90 A80 80 0 0 1 190 90" 
-        fill="none" 
-        stroke="#333" 
-        strokeWidth="20" 
-      />
-      
-      {/* Value arc */}
-      <path 
-        d="M10 90 A80 80 0 0 1 {calculateArc(value)}" 
-        fill="none" 
-        stroke="#ff9966" 
-        strokeWidth="20" 
-      />
-      
-      {/* Value text */}
-      <text 
-        x="100" 
-        y="70" 
-        textAnchor="middle" 
-        fontSize="30" 
-        fill="#ff9966"
-      >
-        {value}%
-      </text>
-    </svg>
-  );
-};
-
-// Helper function to calculate arc
-const calculateArc = (value: number) => {
-  const angle = (value / 100) * 180;
-  const x = 100 + 80 * Math.cos(Math.PI * (angle - 90) / 180);
-  const y = 90 + 80 * Math.sin(Math.PI * (angle - 90) / 180);
-  return `${x} ${y}`;
-};
+    return (
+      <svg viewBox="0 0 200 100" width="250" height="200">
+        {/* Background arc - full length */}
+        <path 
+          d="M10 90 A80 80 0 0 1 190 90" 
+          fill="none" 
+          stroke="#333" 
+          strokeWidth="20" 
+        />
+        
+        {/* Value arc */}
+        <path 
+          d={`M10 90 A80 80 0 0 1 190 90`}
+          fill="none" 
+          stroke="#ff9966" 
+          strokeWidth="20"
+          strokeDasharray={`${(value / 100) * 251.33}, 251.33`}
+        />
+        
+        {/* Value text */}
+        <text 
+          x="100" 
+          y="70" 
+          textAnchor="middle" 
+          fontSize="30" 
+          fill="#ff9966"
+        >
+          {value}%
+        </text>
+      </svg>
+    );
+  };
 
 const Dashboard: React.FC = () => {
   return (
@@ -54,7 +47,7 @@ const Dashboard: React.FC = () => {
         {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
-          <Speedometer value={75} />
+          <Speedometer value={90} />
           <p className="mt-4 text-orange-500 font-bold">High Risk</p>
         </div>
 
