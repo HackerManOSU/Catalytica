@@ -4,13 +4,12 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
-import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
-import { MapActions } from '../utils/mapstate'; // Import map actions
+import { useMapDispatch, useMapState } from '../utils/mapstate'; 
+import { MapActions } from '../utils/mapstate'; 
 import './border.css';
 
-// Define props interface for the Map component
 interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
+  center?: [number, number]; 
   zoom?: number;
   markers?: Array<{
     position: [number, number];
@@ -21,12 +20,11 @@ interface MapProps {
 }
 
 const HawaiiMap = ({ 
-  center = [20.7984, -156.3319], // Center of Hawaii
+  center = [20.7984, -156.3319],
   zoom = 5.25,
   markers = [],
   fullscreen = false
 }: MapProps) => {
-  // Create a reference to store the map instance
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
@@ -37,12 +35,10 @@ const HawaiiMap = ({
   const mapDispatch = useMapDispatch();
   const MapState = useMapState();
 
-  // Fetch FIRMS data (do not clear loading here)
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch fire data - use the same parameter as USMap
         const data = await fetchRecentFIRMSData();
         setFirmsData(data);
         setError(null);
@@ -54,14 +50,12 @@ const HawaiiMap = ({
     fetchData();
   }, []);
 
-  // Map initialization effect
   useEffect(() => {
     if (!mapContainerRef.current) return;
     
-    // Define Hawaii bounds
     const hawaiiBounds = L.latLngBounds(
-      [18.5, -161.0], // Southwest corner
-      [22.5, -154.0]  // Northeast corner
+      [18.5, -161.0], 
+      [22.5, -154.0]  
     );
 
     mapRef.current = L.map(mapContainerRef.current, {
@@ -95,7 +89,7 @@ const HawaiiMap = ({
         mapRef.current = null;
       }
     };
-  }, []); // Empty dependency array for one-time initialization
+  }, []); 
 
   useEffect(() => {
     if (!mapRef.current || !firmsData || firmsData.length === 0) return;
@@ -163,7 +157,6 @@ const HawaiiMap = ({
         }
       }).addTo(mapRef.current);
       
-      // Add a 2 second artificial delay to ensure everything renders properly
       setTimeout(() => {
         setLoading(false);
         setMapReady(true);
@@ -174,15 +167,13 @@ const HawaiiMap = ({
       setError("Error creating heatmap visualization");
       setLoading(false);
     }
-  }, [firmsData]); // Only depend on firmsData
+  }, [firmsData]); 
     
 
 
-  // Effect to add/update markers when markers prop changes
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Clear existing markers
     mapRef.current.eachLayer((layer) => {
       if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
         mapRef.current?.removeLayer(layer);

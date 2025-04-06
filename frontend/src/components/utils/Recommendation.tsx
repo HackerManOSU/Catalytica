@@ -90,15 +90,11 @@ const Recommendation: React.FC = () => {
     currentPopulation,
   ]);
 
-  // Function to format the recommendation text to handle markdown-style formatting
   const formatRecommendation = (text: string) => {
-    // Replace markdown-style bold text with proper HTML
     let formatted = text.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-orange-400">$1</span>');
     
-    // Replace asterisks at the beginning of text with a line break
     formatted = formatted.replace(/^\s*\*\s*/g, '');
     
-    // Replace asterisks in the middle of text with line breaks
     formatted = formatted.replace(/\s*\*\s*/g, '<br /><br />');
     
     return formatted;
@@ -133,7 +129,6 @@ const Recommendation: React.FC = () => {
             </ul>
           )}
 
-          {/* Improved metadata table */}
           <div className="mt-6 p-4 bg-gray-800 rounded-lg">
             <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-3 font-semibold">Location Data</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -156,7 +151,6 @@ const Recommendation: React.FC = () => {
             </div>
           </div>
           
-          {/* Weather conditions panel */}
           {currentWeather && (
             <div className="mt-4 p-4 bg-gray-800 rounded-lg">
               <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-3 font-semibold">Weather Conditions</h3>

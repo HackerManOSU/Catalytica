@@ -4,7 +4,6 @@ import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// Your Firebase project config
 const firebaseConfig = {
   apiKey: "input secret here or whatever the name is",
   authDomain: "catalytica-b8ad9.firebaseapp.com",
@@ -15,7 +14,7 @@ const firebaseConfig = {
   measurementId: "G-Q2DB40DMKE",
 };
 
-// Initialize Firebase
+// Init Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);

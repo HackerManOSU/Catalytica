@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import {useState, useEffect, useCallback} from 'react';
-import { MapActions, useMapState,  useMapDispatch } from './mapstate'; // Import the map dispatch
+import { MapActions, useMapState,  useMapDispatch } from './mapstate'; 
 import Recommendation from './Recommendation';
 import { getFIRMS, FIRMSData } from '../../services/firmsService';
-import FireAnimation from './fireicon'; // Add this import
+import FireAnimation from './fireicon'; 
 
 
 function haversineDistance(
@@ -31,7 +31,6 @@ function haversineDistance(
   
     return (
       <svg viewBox="0 0 200 100" width="250" height="200">
-        {/* Background arc - full length */}
         <path 
           d="M10 90 A80 80 0 0 1 190 90" 
           fill="none" 
@@ -39,7 +38,6 @@ function haversineDistance(
           strokeWidth="20" 
         />
         
-        {/* Value arc */}
         <motion.path
           d="M10 90 A80 80 0 0 1 190 90"
           fill="none" 
@@ -52,7 +50,6 @@ function haversineDistance(
           transition={{ duration: 0.6 }}
         />
   
-        {/* Value text */}
         <text 
           x="100" 
           y="70" 
@@ -74,23 +71,20 @@ function haversineDistance(
     const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
     const getWeatherAdjustment = useCallback(() => {
-      let adjustment = 1.0; // Default multiplier (no change)
+      let adjustment = 1.0; 
       
-      // Wind speed adjustment - increases severity
       if (mapState.currentWindSpeed) {
         // Wind over 15mph significantly increases fire risk
         const windFactor = Math.min((mapState.currentWindSpeed / 15) * 0.3, 0.5);
         adjustment += windFactor;
       }
       
-      // Humidity adjustment - decreases severity
       if (mapState.currentHumidity) {
         // Higher humidity reduces fire risk
         const humidityFactor = Math.min((mapState.currentHumidity / 100) * 0.4, 0.4);
         adjustment -= humidityFactor;
       }
       
-      // Temperature adjustment - increases severity
       if (mapState.currentTemperature) {
         // Temperatures above 80°F increase fire risk
         const tempFactor = mapState.currentTemperature > 80 
@@ -102,18 +96,17 @@ function haversineDistance(
       // Weather conditions adjustment
       const weatherLower = (mapState.currentWeather || "").toLowerCase();
       if (weatherLower.includes("rain") || weatherLower.includes("shower")) {
-        adjustment -= 0.3; // Rain significantly reduces fire risk
+        adjustment -= 0.3; 
       } else if (weatherLower.includes("snow") || weatherLower.includes("sleet")) {
-        adjustment -= 0.5; // Snow/ice conditions drastically reduce fire risk
+        adjustment -= 0.5; 
       } else if (weatherLower.includes("fog") || weatherLower.includes("mist")) {
-        adjustment -= 0.2; // Foggy conditions reduce fire risk slightly
+        adjustment -= 0.2; 
       } else if (weatherLower.includes("thunder") || weatherLower.includes("lightning")) {
-        adjustment += 0.2; // Lightning can increase fire risk
+        adjustment += 0.2; 
       } else if (weatherLower.includes("clear") || weatherLower.includes("sunny")) {
-        adjustment += 0.1; // Clear conditions slightly increase risk
+        adjustment += 0.1; 
       }
       
-      // Keep adjustment within reasonable bounds (0.5 to 1.7)
       return Math.max(0.5, Math.min(adjustment, 1.7));
     }, [mapState.currentWindSpeed, mapState.currentHumidity, mapState.currentTemperature, mapState.currentWeather]);
   
@@ -196,12 +189,10 @@ function haversineDistance(
         }
 
         try {
-          // Use the imported service instead of direct Firestore calls
           const firmsData = await getFIRMS();
           
           const allFires: FIRMSData[] = [];
       
-          // Filter fires based on distance criteria
           firmsData.forEach(fireEntry => {
             if (
               typeof fireEntry.latitude === "number" &&
@@ -229,32 +220,26 @@ function haversineDistance(
             .sort((a, b) => (a.distance as number) - (b.distance as number))
             .slice(0, 50);
       
-          // Update global state
           mapDispatch(MapActions.setTotalactiveFires(nearestFires.length));
       
           if (nearestFires[0]) {
             const closest = nearestFires[0];
       
-            // Store weather-related data
             mapDispatch(MapActions.setCurrentWeather(closest.weather?.weather_desc || "No data"));
             mapDispatch(MapActions.setCurrentTemperature(closest.weather?.temperature || 0));
             mapDispatch(MapActions.setCurrentHumidity(closest.weather?.humidity || 0));
             mapDispatch(MapActions.setCurrentWindSpeed(closest.weather?.wind_speed || 0));
             
-            // Store raw FRP in a temporary variable, NOT in state yet
             const rawFrp = closest.frp || 0;
             
-            // Now calculate the scaled severity using the same formula
             const weatherAdjustment = getWeatherAdjustment();
             const baseSeverity = rawFrp >= 1000 
               ? 10 
               : 1 + (rawFrp * 9) / 1000;
             const calculatedSeverity = Math.min(10, baseSeverity * weatherAdjustment);
             
-            // Round to 1 decimal place to match the speedometer display
             const roundedSeverity = parseFloat(calculatedSeverity.toFixed(1));
             
-            // Now set the calculated and rounded value
             mapDispatch(MapActions.setCurrentSeverity(roundedSeverity));
 
             setIsLoadingLocation(true);
@@ -273,7 +258,7 @@ function haversineDistance(
           } catch (error) {
             console.error("Error fetching fire data:", error);
             resetDashboardState();
-            setIsLoadingLocation(false); // Ensure loading state is turned off on error
+            setIsLoadingLocation(false); 
 
         }
       };
@@ -290,7 +275,6 @@ function haversineDistance(
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
           <Speedometer value={mapState.currentSeverity} />
@@ -304,7 +288,6 @@ function haversineDistance(
           )}
         </div>
 
-        {/* Active Fires */}
         <div className="bg-gray-800 rounded-lg p-6 border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Active Fires</h2>
           <div className="flex items-center justify-between">
@@ -338,7 +321,6 @@ function haversineDistance(
 
         </div>
 
-        {/* Affected Area */}
         <div className="bg-gray-800 rounded-lg p-6 border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Total Population</h2>
           <div className="flex flex-col">

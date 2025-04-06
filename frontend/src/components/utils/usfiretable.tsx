@@ -5,7 +5,7 @@ import { db } from '../../Lib/firebase';
 
 const getFireLevel = (frp: number) => {
     if (!Number.isFinite(frp)) return null; // skip bad values
-    if (frp > 1000) return 6; // special "Severe" level (optional)
+    if (frp > 1000) return 6; 
     if (frp >= 800) return 5;
     if (frp >= 600) return 4;
     if (frp >= 400) return 3;

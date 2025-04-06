@@ -4,13 +4,12 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
-import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
-import { MapActions } from '../utils/mapstate'; // Import map actions
+import { useMapDispatch, useMapState } from '../utils/mapstate'; 
+import { MapActions } from '../utils/mapstate'; 
 import './border.css';
 
-// Define props interface for the Map component
 interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
+  center?: [number, number]; 
   zoom?: number;
   markers?: Array<{
     position: [number, number];
@@ -21,12 +20,11 @@ interface MapProps {
 }
 
 const AlaskaMap = ({ 
-  center = [64.2008, -149.4937], // Center of Alaska
+  center = [64.2008, -149.4937], 
   zoom = 4,
   markers = [],
   fullscreen = false
 }: MapProps) => {
-  // Create a reference to store the map instance
   const mapDispatch = useMapDispatch();
   const MapState = useMapState();
   const mapRef = useRef<L.Map | null>(null);
@@ -38,12 +36,10 @@ const AlaskaMap = ({
   const [mapReady, setMapReady] = useState<boolean>(false);
 
 
-  // Fetch FIRMS data without clearing loading state here
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch fire data - use the same parameter as USMap
         const data = await fetchRecentFIRMSData();
         setFirmsData(data);
         setError(null);
@@ -56,7 +52,6 @@ const AlaskaMap = ({
     fetchData();
   }, []);
 
-    // Fetch FIRMS data
     useEffect(() => {
       const fetchData = async () => {
         try {
@@ -73,7 +68,6 @@ const AlaskaMap = ({
       fetchData();
     }, []);
   
-    // Map initialization effect
     useEffect(() => {
       if (!mapContainerRef.current) return;
   
@@ -113,7 +107,7 @@ const AlaskaMap = ({
           mapRef.current = null;
         }
       };
-    }, []); // Empty dependency array for one-time initialization
+    }, []); 
   
 
     useEffect(() => {
@@ -182,7 +176,6 @@ const AlaskaMap = ({
           }
         }).addTo(mapRef.current);
         
-      // Add a 2 second artificial delay to ensure everything renders properly
       setTimeout(() => {
         setLoading(false);
         setMapReady(true);
@@ -193,24 +186,21 @@ const AlaskaMap = ({
       setError("Error creating heatmap visualization");
       setLoading(false);
       }
-    }, [firmsData]); // Only depend on firmsData
+    }, [firmsData]); 
 
-  // Effect to add/update markers when markers prop changes
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Clear existing markers
     mapRef.current.eachLayer((layer) => {
       if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
         mapRef.current?.removeLayer(layer);
       }
     });
 
-    // Add new markers
     markers.forEach(marker => {
       const severity = marker.severity;
       const color = severity > 7 ? '#FF3B30' : severity > 4 ? '#FF9500' : '#FFCC00';
-      const radius = Math.max(8, severity * 3); // Minimum size with scaling
+      const radius = Math.max(8, severity * 3); 
       
       const circleMarker = L.circleMarker(marker.position, {
         radius,
@@ -222,7 +212,6 @@ const AlaskaMap = ({
         className: 'pulse-marker'
       }).addTo(mapRef.current!);
       
-      // Enhanced popup
       if (marker.details) {
         circleMarker.bindPopup(
           `<div class="popup-content">

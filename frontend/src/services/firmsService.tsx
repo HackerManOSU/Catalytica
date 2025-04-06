@@ -47,11 +47,9 @@ export const getFIRMS = async (): Promise<FIRMSData[]> => {
       const data = doc.data();
       console.log("Processing doc:", doc.id);
       
-      // For each field in the doc (like "0", "1", "2"...)
       Object.values(data).forEach((entryGroup: any) => {
         if (Array.isArray(entryGroup)) {
           entryGroup.forEach((fireEntry: any) => {
-            // Check if entry has necessary data
             if (
               typeof fireEntry.latitude === "number" &&
               typeof fireEntry.longitude === "number"
@@ -143,5 +141,4 @@ function getFallbackMockData(): FIRMSData[] {
   
 }
 
-// Export for backward compatibility
 export const fetchRecentFIRMSData = getFIRMS;

@@ -1,9 +1,9 @@
 import { useEffect} from "react";
 
 interface FireAnimationProps {
-  size?: number; // Size in pixels
-  className?: string; // Additional classes
-  isVisible?: boolean; // Visibility flag
+  size?: number; 
+  className?: string; 
+  isVisible?: boolean; 
 }
 
 const FireAnimation: React.FC<FireAnimationProps> = ({ 
@@ -11,7 +11,6 @@ const FireAnimation: React.FC<FireAnimationProps> = ({
   className = "",
   isVisible = true
 }) => {
-  // Define the keyframe animations
   const fireStyles = `
     @keyframes scaleUpDown {
       0%, 100% { transform: scaleY(1) scaleX(1); }
@@ -125,7 +124,6 @@ const FireAnimation: React.FC<FireAnimationProps> = ({
     }
   `;
 
-  // Inject the styles in the head once when component mounts
   useEffect(() => {
     const styleEl = document.createElement('style');
     styleEl.textContent = fireStyles;
@@ -157,25 +155,21 @@ const FireAnimation: React.FC<FireAnimationProps> = ({
         margin: '0 auto'
       }}
     >
-      {/* Fire Center */}
       <div className="absolute h-full w-full fire-center">
         <div className="absolute w-full h-full fire-center-main"></div>
         <div className="absolute fire-center-particle"></div>
       </div>
       
-      {/* Fire Right */}
       <div className="absolute h-full w-full fire-right">
         <div className="absolute fire-right-main"></div>
         <div className="absolute fire-right-particle"></div>
       </div>
       
-      {/* Fire Left */}
       <div className="absolute h-full w-full fire-left">
         <div className="absolute fire-left-main"></div>
         <div className="absolute fire-left-particle"></div>
       </div>
       
-      {/* Fire Bottom */}
       <div className="absolute fire-bottom">
         <div className="absolute fire-bottom-main"></div>
       </div>

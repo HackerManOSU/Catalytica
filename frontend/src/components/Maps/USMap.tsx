@@ -4,13 +4,12 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
-import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
-import { MapActions } from '../utils/mapstate'; // Import map actions
+import { useMapDispatch, useMapState } from '../utils/mapstate'; 
+import { MapActions } from '../utils/mapstate'; 
 import './border.css';
 
-// Define props interface for the Map component
 interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
+  center?: [number, number]; 
   zoom?: number;
   markers?: Array<{
     position: [number, number];
@@ -25,7 +24,6 @@ const USMap = ({
   markers = [],
   fullscreen = false
 }: MapProps) => {
-  // Create a reference to store the map instance
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
@@ -36,7 +34,6 @@ const USMap = ({
   const MapState = useMapState();
   const [mapReady, setMapReady] = useState<boolean>(false);
 
-  // Fetch FIRMS data only once when component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,48 +49,43 @@ const USMap = ({
     };
 
     fetchData();
-  }, []); // Empty dependency array - fetch only once
+  }, []); 
 
-  // Update the map size when fullscreen changes
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // After the container resizes due to fullscreen change,
-    // recalculate map size and fit bounds again
+
     setTimeout(() => {
       mapRef.current?.invalidateSize();
       
       const usBounds = L.latLngBounds(
-        [24.0, -125.0], // Southwest corner
-        [49.5, -66.0]   // Northeast corner
+        [24.0, -125.0], 
+        [49.5, -66.0]   
       );
       
       mapRef.current?.fitBounds(usBounds, {
-        padding: [20, 20], // Add padding for better visualization
+        padding: [20, 20], 
         animate: true
       });
     }, 100);
     
   }, [fullscreen]);
     
-  // Map initialization effect
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Define the contiguous US bounds
     const usBounds = L.latLngBounds(
-      [24.0, -125.0], // Southwest corner (southern tip of Florida to westernmost point)
-      [49.5, -66.0]   // Northeast corner (northern border to easternmost point)
+      [24.0, -125.0], 
+      [49.5, -66.0]   
     );
 
     mapRef.current = L.map(mapContainerRef.current, {
-      maxBounds: usBounds.pad(0.1), // Add 10% padding around the bounds to allow slight panning
-      maxBoundsViscosity: 1.0, // Prevent panning outside bounds
-      minZoom: 4, // Allow slightly more zoom out to see context
-      zoomSnap: 0.5, // Allow finer zoom increments for better fitting
+      maxBounds: usBounds.pad(0.1), 
+      maxBoundsViscosity: 1.0, 
+      minZoom: 4, 
+      zoomSnap: 0.5, 
     });
 
-    // Register click event
     mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       mapDispatch(MapActions.setCurrentLatitude(lat));
@@ -103,16 +95,14 @@ const USMap = ({
       L.marker([lat, lng]).addTo(mapRef.current!);
     });
 
-    // Add the map tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
       maxZoom: 19
     }).addTo(mapRef.current);
 
-    // Fit the US bounds with padding for better visualization
     mapRef.current.fitBounds(usBounds, {
-      padding: [20, 20], // Add padding in pixels
-      animate: false // No animation on initial load
+      padding: [20, 20], 
+      animate: false 
     });
 
     return () => {
@@ -121,7 +111,7 @@ const USMap = ({
         mapRef.current = null;
       }
     };
-  }, []); // Empty dependency array for one-time initialization
+  }, []); 
 
 
   useEffect(() => {
@@ -190,7 +180,6 @@ const USMap = ({
         }
       }).addTo(mapRef.current);
       
-      // Add a 2 second artificial delay to ensure everything renders properly
       setTimeout(() => {
         setLoading(false);
         setMapReady(true);
@@ -201,26 +190,23 @@ const USMap = ({
       setError("Error creating heatmap visualization");
       setLoading(false);
     }
-  }, [firmsData]); // Only depend on firmsData
+  }, [firmsData]); 
 
 
 
-  // Effect to add/update markers when markers prop changes
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Clear existing markers
     mapRef.current.eachLayer((layer) => {
       if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
         mapRef.current?.removeLayer(layer);
       }
     });
 
-    // Add new markers
     markers.forEach(marker => {
       const severity = marker.severity;
       const color = severity > 7 ? '#FF3B30' : severity > 4 ? '#FF9500' : '#FFCC00';
-      const radius = Math.max(8, severity * 3); // Minimum size with scaling
+      const radius = Math.max(8, severity * 3); 
       
       const circleMarker = L.circleMarker(marker.position, {
         radius,
@@ -229,10 +215,9 @@ const USMap = ({
         weight: 2,
         opacity: 1,
         fillOpacity: 0.8,
-        className: 'pulse-marker' // We'll add animation
+        className: 'pulse-marker' 
       }).addTo(mapRef.current!);
       
-      // Enhanced popup
       if (marker.details) {
         circleMarker.bindPopup(
           `<div class="popup-content">
@@ -271,7 +256,7 @@ const USMap = ({
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
           border: '3px solid rgb(251, 146, 60)',
           overflow: 'hidden',
-          visibility: mapReady ? 'visible' : 'hidden' // Show the map when it’s ready
+          visibility: mapReady ? 'visible' : 'hidden' 
         }} 
         className="map-container border-radar" 
       />
