@@ -225,10 +225,8 @@ const USMap = ({
   return (
     <div className="relative">
       {loading && (
-      <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-        <div className="p-4 bg-gray-800 rounded-lg">
+      <div className="loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
           <LoadingSpinner />
-        </div>
       </div>
       )}
       {error && (

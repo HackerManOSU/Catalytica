@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
+import LoadingSpinner from '../utils/Loading/LoadingSpinner';
 
 // Define props interface for the Map component
 interface MapProps {
@@ -30,7 +31,7 @@ const AlaskaMap = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch FIRMS data
+  // Fetch FIRMS data without clearing loading state here
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,81 +43,66 @@ const AlaskaMap = ({
       } catch (error) {
         console.error("Failed to fetch FIRMS data:", error);
         setError("Failed to fetch wildfire data.");
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
+  // Combined effect: initialize map (if needed) and apply heatmap once firmsData is available
   useEffect(() => {
-    // Initialize map only once when component mounts
-    if (!mapContainerRef.current || mapRef.current) return;
-
+    if (firmsData.length === 0) return;
+    
     // Define Alaska bounds
     const alaskaBounds = L.latLngBounds(
       [51.0, -180.0], // Southwest corner
       [71.5, -129.0]  // Northeast corner
     );
-
-    // Create Leaflet map instance with Alaska boundaries
-    mapRef.current = L.map(mapContainerRef.current, {
-      center,
-      zoom,
-      maxBounds: alaskaBounds,
-      maxBoundsViscosity: 1.0,
-      minZoom: 3
-    }).setView(center, zoom);
-
-    // Add dark-themed tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
-      maxZoom: 19,
-      bounds: alaskaBounds
-    }).addTo(mapRef.current);
-
-    // Initially fit the map to Alaska bounds
-    mapRef.current.fitBounds(alaskaBounds);
-
-    // Cleanup function to remove map when component unmounts
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [center, zoom]);
-
-  // Effect to add/update heatmap when FIRMS data changes
-  useEffect(() => {
-    if (!mapRef.current || !firmsData || firmsData.length === 0) return;
+    
+    // Create the map instance if it hasn't been created yet
+    if (!mapRef.current && mapContainerRef.current) {
+      mapRef.current = L.map(mapContainerRef.current, {
+        center,
+        zoom,
+        maxBounds: alaskaBounds,
+        maxBoundsViscosity: 1.0,
+        minZoom: 3
+      }).setView(center, zoom);
   
-    // Remove existing heatmap if it exists
-    if (heatLayerRef.current) {
+      // Add dark-themed tile layer
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        bounds: alaskaBounds
+      }).addTo(mapRef.current);
+  
+      // Fit the map to Alaska bounds
+      mapRef.current.fitBounds(alaskaBounds);
+    }
+    
+    // Remove existing heatmap, if any
+    if (mapRef.current && heatLayerRef.current) {
       mapRef.current.removeLayer(heatLayerRef.current);
       heatLayerRef.current = null;
     }
   
     try {
-      // Make sure firmsData is an array before attempting to map it
+      // Normalize firmsData to array form
       let firePoints: FIRMSData[] = [];
       
       if (Array.isArray(firmsData)) {
         firePoints = firmsData;
       } else if (typeof firmsData === 'object' && firmsData !== null) {
-        // Handle different API response formats
         const dataObj = firmsData as { data?: FIRMSData[], results?: FIRMSData[] };
         if ('data' in dataObj && Array.isArray(dataObj.data)) {
           firePoints = dataObj.data;
         } else if ('results' in dataObj && Array.isArray(dataObj.results)) {
           firePoints = (firmsData as { results: FIRMSData[] }).results;
         } else {
-          // Last resort: try to convert object to array if it contains location data
           const keys = Object.keys(firmsData);
-          if (keys.length > 0 && 
-              typeof firmsData[keys[0]] === 'object' && 
-              'latitude' in firmsData[keys[0]] && 
+          if (keys.length > 0 &&
+              typeof firmsData[keys[0]] === 'object' &&
+              'latitude' in firmsData[keys[0]] &&
               'longitude' in firmsData[keys[0]]) {
             firePoints = keys.map(key => firmsData[key]);
           }
@@ -128,7 +114,7 @@ const AlaskaMap = ({
         return;
       }
       
-      // Filter to only show Alaska wildfires
+      // Filter to show only Alaska wildfires
       const alaskaPoints = firePoints.filter(point => 
         typeof point.latitude === 'number' && 
         typeof point.longitude === 'number' && 
@@ -141,15 +127,10 @@ const AlaskaMap = ({
   
       // Convert FIRMS data to heatmap format [lat, lng, intensity]
       const heatData = alaskaPoints.map(point => {
-        // Use frp (Fire Radiative Power) as intensity, with a minimum value
-        const intensity = Math.max(point.frp / 10, 0.5); // Ensure minimum visibility
+        // Use frp as intensity, with a minimum value for visibility
+        const intensity = Math.max(point.frp / 10, 0.5);
         return [point.latitude, point.longitude, intensity];
       });
-  
-      if (heatData.length === 0) {
-        console.warn("No valid heat points to display for Alaska");
-        return;
-      }
   
       console.log(`Creating Alaska heatmap with ${heatData.length} fire points`);
       
@@ -167,11 +148,14 @@ const AlaskaMap = ({
           0.9: '#FF0000'  // Red
         }
       }).addTo(mapRef.current);
+      
+      // Clear loading once the map and heatmap are successfully rendered
+      setLoading(false);
     } catch (error) {
       console.error("Error creating heatmap:", error);
       setError("Error creating heatmap visualization");
     }
-  }, [firmsData]);
+  }, [firmsData, center, zoom]);
 
   // Effect to add/update markers when markers prop changes
   useEffect(() => {
@@ -197,7 +181,7 @@ const AlaskaMap = ({
         weight: 2,
         opacity: 1,
         fillOpacity: 0.8,
-        className: 'pulse-marker' // We'll add animation
+        className: 'pulse-marker'
       }).addTo(mapRef.current!);
       
       // Enhanced popup
@@ -220,11 +204,9 @@ const AlaskaMap = ({
   return (
     <div className="relative">
       {loading && (
-        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <p>Loading wildfire data...</p>
-          </div>
-        </div>
+      <div className="loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+        <LoadingSpinner />
+      </div>
       )}
       {error && (
         <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
@@ -238,7 +220,7 @@ const AlaskaMap = ({
           width: '100%',
           borderRadius: '12px',
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 1)',
           overflow: 'hidden'
         }} 
         className="map-container" 

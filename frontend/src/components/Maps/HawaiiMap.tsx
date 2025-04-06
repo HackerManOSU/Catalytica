@@ -201,11 +201,9 @@ const HawaiiMap = ({
   return (
     <div className="relative">
       {loading && (
-        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <LoadingSpinner />
-          </div>
-        </div>
+      <div className="loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+        <LoadingSpinner />
+      </div>
       )}
       {error && (
         <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
@@ -219,7 +217,7 @@ const HawaiiMap = ({
           width: '100%',
           borderRadius: '12px',
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 1)',
           overflow: 'hidden'
         }} 
         className="map-container" 
