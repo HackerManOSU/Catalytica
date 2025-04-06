@@ -18,7 +18,7 @@ A real-time wildfire monitoring and resource allocation platform that provides c
 ### Population Impact Analysis 
 - Region-specific population data 
 - Affected area calculations 
-- Geographic targeting within 15-mile radius 
+- Geographic targeting within a 15 mile radius 
 - County/region identification 
 
 ### AI-Powered Recommendations 
@@ -38,7 +38,7 @@ A real-time wildfire monitoring and resource allocation platform that provides c
 
 ## Tech Stack 
 
-- React + TypeScript ⚛
+- React + TypeScript
 - Firebase (Firestore, Cloud Functions) 
 - NASA FIRMS API 
 - OpenCage Geocoding 
