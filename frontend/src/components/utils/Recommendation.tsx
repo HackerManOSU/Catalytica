@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { useMapState } from "./mapstate";
+import { useMapState, useMapDispatch, MapActions, MapStateProvider } from "./mapstate";
 
 const Recommendation: React.FC = () => {
   const {
@@ -16,23 +16,61 @@ const Recommendation: React.FC = () => {
     currentPopulation,
   } = useMapState();
 
+  const dispatch = useMapDispatch();
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const prevLocationRef = useRef<{lat: number | null, lng: number | null}>({ lat: null, lng: null });
+
+  const resetRecommendationsState = useCallback(() => {
+    setRecommendations([]);
+    setError("");
+    setLoading(false);
+    dispatch(MapActions.resetRecommendations());
+  }, [dispatch]);
+
+  const hasValidData = useCallback(() => {
+    return (
+      currentLatitude != null &&
+      currentLongitude != null &&
+      currentSeverity != null &&
+      currentWeather != null
+    );
+  }, [currentLatitude, currentLongitude, currentSeverity, currentWeather]);
+
+  useEffect(() => {
+    if (!hasValidData()) {
+      resetRecommendationsState();
+    }
+  }, [currentLatitude, currentLongitude, currentSeverity, currentWeather, hasValidData, resetRecommendationsState]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (
-        currentLatitude == null ||
-        currentLongitude == null ||
-        currentSeverity == null ||
-        currentWeather == null
-      ) return;
+      if (!hasValidData()) {
+        resetRecommendationsState();
+        return;
+      }
+
+      if (totalactiveFires === 0) { 
+        console.log("No active fires detected.");
+        setRecommendations([]);
+        return;
+      }
+
+      const locationChanged = 
+        prevLocationRef.current.lat !== currentLatitude || 
+        prevLocationRef.current.lng !== currentLongitude;
+
+      prevLocationRef.current = { 
+        lat: currentLatitude, 
+        lng: currentLongitude 
+      };
 
       setLoading(true);
+      dispatch(MapActions.setRecommendationsLoading(true));
       setError("");
-      setRecommendations([]);
-
+      dispatch(MapActions.setRecommendationsError(""));
+      
       try {
         const response = await fetch(
           "https://us-central1-catalytica-b8ad9.cloudfunctions.net/generateRecommendations",
@@ -65,18 +103,24 @@ const Recommendation: React.FC = () => {
 
         const bullets = text
           .split("\n")
-          .filter((line: string) => line.trim().startsWith("•") || line.trim().startsWith("-"));
+          .filter((line: string) => line.trim().startsWith("•") || line.trim().startsWith("-") || line.trim().startsWith("*"));
 
-        setRecommendations(bullets.length ? bullets : [text]);
+        const formattedRecommendations = bullets.length ? bullets : [text];
+        setRecommendations(formattedRecommendations);
+        dispatch(MapActions.setRecommendations(formattedRecommendations));
       } catch (err) {
         console.error("Gemini API call failed:", err);
         setError("Could not generate recommendations.");
+        dispatch(MapActions.setRecommendationsError("Could not generate recommendations."));
       } finally {
         setLoading(false);
+        dispatch(MapActions.setRecommendationsLoading(false));
       }
     };
 
-    fetchRecommendations();
+    if (hasValidData()) {
+      fetchRecommendations();
+    }
   }, [
     currentLatitude,
     currentLongitude,
@@ -88,6 +132,9 @@ const Recommendation: React.FC = () => {
     totalactiveFires,
     selectedRegion,
     currentPopulation,
+    hasValidData,
+    resetRecommendationsState,
+    dispatch
   ]);
 
   const formatRecommendation = (text: string) => {
@@ -99,6 +146,8 @@ const Recommendation: React.FC = () => {
     
     return formatted;
   };
+
+  const showPlaceholder = !hasValidData() || totalactiveFires === 0 || (recommendations.length === 0 && !loading && !error);
 
   return (
     <motion.div
@@ -119,7 +168,11 @@ const Recommendation: React.FC = () => {
 
           {error && <p className="text-red-400">{error}</p>}
 
-          {!loading && !error && recommendations.length > 0 && (
+          {showPlaceholder && (
+            <p className="text-gray-400 italic">No recommendations available. Select a location with active fire data.</p>
+          )}
+
+          {!loading && !error && !showPlaceholder && recommendations.length > 0 && (
             <ul className="list-none space-y-4 mb-6 text-gray-200">
               {recommendations.map((rec, i) => (
                 <li key={i} className="pl-4 border-l-2 border-orange-400">
@@ -151,7 +204,7 @@ const Recommendation: React.FC = () => {
             </div>
           </div>
           
-          {currentWeather && (
+          {currentWeather ? (
             <div className="mt-4 p-4 bg-gray-800 rounded-lg">
               <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-3 font-semibold">Weather Conditions</h3>
               <div className="grid grid-cols-3 gap-3">
@@ -172,6 +225,11 @@ const Recommendation: React.FC = () => {
                 <span className="text-xs text-gray-500 mb-1">Conditions</span>
                 <span className="block text-white">{currentWeather}</span>
               </div>
+            </div>
+          ) : (
+            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+              <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-3 font-semibold">Weather Conditions</h3>
+              <p className="text-gray-400 italic">No weather data available</p>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
-//test
+
 type MapState = {
   currentLongitude: number | null;
   currentLatitude: number | null;
@@ -11,6 +11,9 @@ type MapState = {
   currentWindSpeed: number | null;
   currentHumidity: number | null;
   currentTemperature: number | null;
+  recommendations: string[];
+  recommendationsLoading: boolean;
+  recommendationsError: string;
 };
 
 type MapAction = 
@@ -24,6 +27,10 @@ type MapAction =
   | { type: 'SET_CURRENT_WIND_SPEED'; payload: number }
   | { type: 'SET_CURRENT_HUMIDITY'; payload: number }
   | { type: 'SET_CURRENT_TEMPERATURE'; payload: number }
+  | { type: 'SET_RECOMMENDATIONS'; payload: string[] }
+  | { type: 'SET_RECOMMENDATIONS_LOADING'; payload: boolean }
+  | { type: 'SET_RECOMMENDATIONS_ERROR'; payload: string }
+  | { type: 'RESET_RECOMMENDATIONS' }
   | { type: 'RESET_MAP_STATE' };
 
 const getInitialState = (): MapState => {
@@ -40,6 +47,9 @@ const getInitialState = (): MapState => {
       currentWindSpeed: null,
       currentHumidity: null,
       currentTemperature: null,
+      recommendations: [],
+      recommendationsLoading: false,
+      recommendationsError: '',
     };
   } catch (error) {
     console.error('Error loading map state from localStorage:', error);
@@ -54,6 +64,9 @@ const getInitialState = (): MapState => {
       currentWindSpeed: null,
       currentHumidity: null,
       currentTemperature: null,
+      recommendations: [],
+      recommendationsLoading: false,
+      recommendationsError: '',
     };
   }
 };
@@ -80,6 +93,19 @@ function mapReducer(state: MapState, action: MapAction): MapState {
       return { ...state, currentHumidity: action.payload };
     case 'SET_CURRENT_TEMPERATURE':
       return { ...state, currentTemperature: action.payload };
+    case 'SET_RECOMMENDATIONS':
+      return { ...state, recommendations: action.payload };
+    case 'SET_RECOMMENDATIONS_LOADING':
+      return { ...state, recommendationsLoading: action.payload };
+    case 'SET_RECOMMENDATIONS_ERROR':
+      return { ...state, recommendationsError: action.payload };
+    case 'RESET_RECOMMENDATIONS':
+      return { 
+        ...state, 
+        recommendations: [], 
+        recommendationsLoading: false, 
+        recommendationsError: '' 
+      };
     case 'RESET_MAP_STATE':
       return getInitialState();
     default:
@@ -163,5 +189,22 @@ export const MapActions = {
     type: 'SET_CURRENT_TEMPERATURE' as const,
     payload: temperature
   }),
-  resetMapState: () => ({ type: 'RESET_MAP_STATE' as const })
+  setRecommendations: (recommendations: string[]) => ({
+    type: 'SET_RECOMMENDATIONS' as const,
+    payload: recommendations
+  }),
+  setRecommendationsLoading: (loading: boolean) => ({
+    type: 'SET_RECOMMENDATIONS_LOADING' as const,
+    payload: loading
+  }),
+  setRecommendationsError: (error: string) => ({
+    type: 'SET_RECOMMENDATIONS_ERROR' as const,
+    payload: error
+  }),
+  resetRecommendations: () => ({
+    type: 'RESET_RECOMMENDATIONS' as const
+  }),
+  resetMapState: () => ({ 
+    type: 'RESET_MAP_STATE' as const 
+  })
 };
