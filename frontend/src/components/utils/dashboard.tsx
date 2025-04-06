@@ -128,9 +128,13 @@ function haversineDistance(
                      data?.results?.[0]?.components?.town ||
                      data?.results?.[0]?.components?.village ||
                      "Unknown";
-        const state = data?.results?.[0]?.components?.state_code || "Unknown State";
-        return county;
+        // const state = data?.results?.[0]?.components?.state_code || "Unknown State";
+        return cleanCountyName(county);
       };
+
+      function cleanCountyName(county: string): string {
+        return county.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      }
       
       const fetchFirmsUpdates = async () => {
         if (!mapState.currentLatitude || !mapState.currentLongitude) {
