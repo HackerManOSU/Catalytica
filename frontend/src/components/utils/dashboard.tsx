@@ -177,7 +177,7 @@ function haversineDistance(
                      data?.results?.[0]?.components?.village ||
                      "Unknown";
                      
-        return city;
+        return cleanCountyName(city);
       };
 
       function cleanCountyName(county: string): string {
