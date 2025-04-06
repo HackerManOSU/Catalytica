@@ -182,12 +182,16 @@ const AlaskaMap = ({
           }
         }).addTo(mapRef.current);
         
-        setLoading(false);      
+      // Add a 2 second artificial delay to ensure everything renders properly
+      setTimeout(() => {
+        setLoading(false);
         setMapReady(true);
+      }, 2000);
 
-      } catch (error) {
-        console.error("Error creating heatmap:", error);
-        setError("Error creating heatmap visualization");
+    } catch (error) {
+      console.error("Error creating heatmap:", error);
+      setError("Error creating heatmap visualization");
+      setLoading(false);
       }
     }, [firmsData]); // Only depend on firmsData
 
