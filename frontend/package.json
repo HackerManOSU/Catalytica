@@ -18,6 +18,7 @@
     "@types/leaflet.heat": "^0.2.4",
     "axios": "^1.8.4",
     "firebase": "^11.6.0",
+    "firebase-tools": "^14.1.0",
     "framer-motion": "^12.6.3",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",

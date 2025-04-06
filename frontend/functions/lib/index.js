@@ -3,7 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scheduledFIRMSUpdate = exports.fetchRecentFIRMSData = exports.scheduledWeatherUpdate = exports.getWeatherController = exports.addWeatherController = void 0;
+exports.scheduledFIRMSUpdate = exports.fetchRecentFIRMSData = exports.scheduledWeatherUpdate = void 0;
+exports.addWeatherController = addWeatherController;
+exports.getWeatherController = getWeatherController;
 // Import the Scheduler trigger and logger from Firebase Functions v2
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const firebase_functions_1 = require("firebase-functions");
@@ -21,7 +23,6 @@ async function addWeatherController(weatherData) {
         throw err;
     }
 }
-exports.addWeatherController = addWeatherController;
 ;
 async function getWeatherController() {
     try {
@@ -36,7 +37,6 @@ async function getWeatherController() {
         throw err;
     }
 }
-exports.getWeatherController = getWeatherController;
 ;
 // --------------------------------------------------------------------
 // Weather Update Function
