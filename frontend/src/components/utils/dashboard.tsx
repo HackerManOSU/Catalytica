@@ -179,6 +179,10 @@ function haversineDistance(
                      
         return city;
       };
+
+      function cleanCountyName(county: string): string {
+        return county.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+      }
       
       const fetchFirmsUpdates = async () => {
         if (!mapState.currentLatitude || !mapState.currentLongitude) {
