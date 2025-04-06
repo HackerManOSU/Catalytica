@@ -1,7 +1,7 @@
-import { db } from "../firebase"; // Ensure this imports the Firestore instance
+import { db } from "../firebase";
 import { Fire } from "../models/fire";
 import { Weather } from "../models/weather";
-import { Timestamp, DocumentReference, getDoc } from "firebase/firestore"; // Correct imports for Firestore
+import { Timestamp, DocumentReference, getDoc } from "firebase/firestore"
 
 export async function addFireController(fireData: Fire): Promise<void> {
   try {
@@ -18,7 +18,6 @@ export async function addFireController(fireData: Fire): Promise<void> {
   }
 }
 
-// Create an extended interface for the data we return
 export interface FireWithWeatherData extends Omit<Fire, 'weather'> {
   id: string;
   weather: Weather | null;
@@ -33,8 +32,7 @@ export async function getFiresController(): Promise<FireWithWeatherData[]> {
         if (fireData.report_date instanceof Timestamp) {
           fireData.report_date = fireData.report_date.toDate();
         }
-        
-        // Fetch weather using the DocRef
+
         let weatherData: Weather | null = null;
         if (fireData.weather instanceof DocumentReference) {
           const weatherDoc = await getDoc(fireData.weather);
@@ -42,8 +40,7 @@ export async function getFiresController(): Promise<FireWithWeatherData[]> {
             weatherData = weatherDoc.data() as Weather;
           }
         }
-        
-        // Create and return a FireWithWeatherData object
+
         return { 
           id: doc.id, 
           lat: fireData.lat,
