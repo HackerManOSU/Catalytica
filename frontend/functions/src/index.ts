@@ -13,12 +13,10 @@ import { haversineDistance } from './components/haversine';
 admin.initializeApp();
 const db = admin.firestore();
 
-const genAI = new GoogleGenerativeAI(functions.config().gemini.key); // or replace with hardcoded key for now
-
 export async function addWeatherController(weatherData: Weather) {
   try {
     const docRef = await db.collection("weather").add(weatherData);
-    return docRef; // return ref for fire.tsP
+    return docRef; // return ref for fire.ts
   } catch (err) {
     console.log("Error adding weather: ", err);
     throw err;
@@ -45,7 +43,7 @@ export async function getWeatherController(): Promise<Weather[]> {
 // --------------------------------------------------------------------
 
 // API Key for Weather
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '5c9b0fcd199a99e6da5ca17c4ffa43f3';
+const OPENWEATHER_API_KEY = process.env.VITE_OPEN_WEATHER_KEY || '';
 
 export const scheduledWeatherUpdate = onSchedule('every 1 minutes', async (event) => {
   try {
@@ -85,8 +83,6 @@ export const scheduledWeatherUpdate = onSchedule('every 1 minutes', async (event
 // FIRMS Data Update Function with Weather Enrichment
 // --------------------------------------------------------------------
 
-// Define your FIRMSData interface
-
 /**
  * Fetch recent fire data from NASA FIRMS API
  * @param days Number of days of data to fetch (1-10)
@@ -100,14 +96,15 @@ export const fetchRecentFIRMSData = async (days: number = 1): Promise<FIRMSData[
   }
 
   try {
-    const API_KEY = 'cf98c6449135681479583e01ac6894d9';
-    if (!API_KEY) {
+    const FIRMS_API_KEY = process.env.VITE_FIRMS_MAP_KEY;
+
+    if (!FIRMS_API_KEY) {
       console.error('FIRMS API key not found');
       throw new Error('FIRMS API key not found');
     }
 
     const validDays = 2;
-    const response = await axios.get(`https://firms.modaps.eosdis.nasa.gov/api/country/csv/${API_KEY}/VIIRS_SNPP_NRT/USA/${validDays}`);
+    const response = await axios.get(`https://firms.modaps.eosdis.nasa.gov/api/country/csv/${FIRMS_API_KEY}/VIIRS_SNPP_NRT/USA/${validDays}`);
 
     if (response.status !== 200) {
       throw new Error(`API request failed with status ${response.status}`);
@@ -237,16 +234,20 @@ export const scheduledFIRMSUpdate = onSchedule('every 1 minutes', async (event) 
   }
 });
 
+const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_KEY);
+
+// Cloud Function to generate wildfire safety recommendations using Gemini
 export const generateRecommendations = functions.https.onCall(async (request, context) => {
+  // Extract input data from the request
   const { lat, lng, weather, severity, totalFires, population, region } = request.data;
 
   if (lat == null || lng == null) {
     throw new functions.https.HttpsError("invalid-argument", "Latitude and longitude are required.");
   }
 
+  // Query Firestore for nearby fire reports from the "userEntries" collection
   const userLoc: [number, number] = [lat, lng];
   const allDocs = await db.collection("userEntries").get();
-
   const matchingReports: { entry: string; distance: number }[] = [];
 
   for (const doc of allDocs.docs) {
@@ -254,11 +255,11 @@ export const generateRecommendations = functions.https.onCall(async (request, co
     if (!data.coordinates || typeof data.coordinates.lat !== "number" || typeof data.coordinates.lng !== "number") {
       continue;
     }
-
     const docLoc: [number, number] = [data.coordinates.lat, data.coordinates.lng];
     const distanceKm = haversineDistance(userLoc, docLoc);
-    const distanceMi = distanceKm * 0.621371;
+    const distanceMi = distanceKm * 0.621371; // convert km to miles
 
+    // Only include entries within 50 miles
     if (distanceMi <= 50) {
       matchingReports.push({
         entry: data.entry || "No description",
@@ -267,12 +268,13 @@ export const generateRecommendations = functions.https.onCall(async (request, co
     }
   }
 
-  // Sort and take top 30
-  const sorted = matchingReports.sort((a, b) => a.distance - b.distance).slice(0, 30);
-  const reportSnippets = sorted.map(
+  // Sort the reports by distance and limit to 30 entries
+  const sortedReports = matchingReports.sort((a, b) => a.distance - b.distance).slice(0, 30);
+  const reportSnippets = sortedReports.map(
     (r, i) => `${i + 1}. "${r.entry}" (${r.distance.toFixed(1)} mi)`
   );
 
+  // Construct the prompt for Gemini
   const prompt = `
 You are a wildfire safety assistant. Based on the following data, provide 3 brief bullet-point safety recommendations:
 
@@ -289,6 +291,7 @@ Only return bullet points.
 `;
 
   try {
+    // Get the generative model from Gemini (using "gemini-pro" in this example)
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const result = await model.generateContent(prompt);
     const text = await result.response.text();
@@ -298,4 +301,3 @@ Only return bullet points.
     throw new functions.https.HttpsError("internal", "Gemini failed.");
   }
 });
-

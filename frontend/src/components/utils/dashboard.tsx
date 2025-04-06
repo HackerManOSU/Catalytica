@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion';
-import {useState, useEffect} from 'react';
-import { MapActions, useMapState,  useMapDispatch } from '../utils/mapstate'; // Import the map dispatch
+import {useState, useEffect, useCallback} from 'react';
+import { MapActions, useMapState,  useMapDispatch } from './mapstate'; // Import the map dispatch
 import ReportFireModal from './ReportFireModal';
 import Recommendation from './Recommendation';
 import { getFIRMS, FIRMSData } from '../../services/firmsService';
-
-
 
 
 function haversineDistance(
@@ -78,7 +76,16 @@ function haversineDistance(
          : 1 + (mapState.currentSeverity * 9) / 1000)
       : 0;
 
-    
+      const resetDashboardState = useCallback(() => {
+        mapDispatch(MapActions.setTotalactiveFires(0));
+        mapDispatch(MapActions.setCurrentWeather("No data"));
+        mapDispatch(MapActions.setCurrentTemperature(null));
+        mapDispatch(MapActions.setCurrentHumidity(null));
+        mapDispatch(MapActions.setCurrentWindSpeed(null));
+        mapDispatch(MapActions.setCurrentSeverity(0));
+        mapDispatch(MapActions.setSelectedRegion("None"));
+        mapDispatch(MapActions.setCurrentPopulation(0));
+      }, [mapDispatch]);
     
 
     useEffect(() => {
@@ -109,8 +116,7 @@ function haversineDistance(
           return 0;
         }
       };
-      
-      
+    
       
       const fetchNearestCity = async (lat: number, lng: number) => {
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${import.meta.env.VITE_OPEN_CAGE_KEY}`;
@@ -127,8 +133,12 @@ function haversineDistance(
       };
       
       const fetchFirmsUpdates = async () => {
-        if (!mapState.currentLatitude || !mapState.currentLongitude) return;
-      
+        if (!mapState.currentLatitude || !mapState.currentLongitude) {
+          console.warn("Latitude or Longitude not set");
+          resetDashboardState();
+          return;
+        }
+
         try {
           // Use the imported service instead of direct Firestore calls
           const firmsData = await getFIRMS();
@@ -178,17 +188,20 @@ function haversineDistance(
             mapDispatch(MapActions.setSelectedRegion(city));
             const population = await fetchPopulationFromJSON(city);
             mapDispatch(MapActions.setCurrentPopulation(population));
-          }
-      
-          console.log("Nearest fires:", nearestFires);
-        } catch (error) {
-          console.error("Error fetching fire data:", error);
+            } else {
+              resetDashboardState();
+            }
+        
+            console.log("Nearest fires:", nearestFires);
+          } catch (error) {
+            console.error("Error fetching fire data:", error);
+            resetDashboardState();
         }
       };
       
     
       fetchFirmsUpdates();
-    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch]);
+    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch, resetDashboardState]);
     
   return (
     <motion.div
