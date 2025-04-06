@@ -30,15 +30,27 @@ function App() {
   }, [alaskaFullscreen, hawaiiFullscreen, usFullscreen]);
 
   return (
-    <div className="p-4 bg-[black] min-h-screen">
+    <div className="bg-[black] min-h-screen">
       {!alaskaFullscreen && !hawaiiFullscreen && !usFullscreen && (
         <>
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-red-900 to-orange-800 py-6 px-4 shadow-lg mb-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center">
+                <div className="mr-4">
+                  <FireAnimation size={40} isVisible={true} />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Catalytica</h1>
+                  <p className="text-orange-200">Real-time wildfire monitoring and resource allocation</p>
+                </div>
+              </div>
+            </div>
+          </div>
           <motion.div className="max-w-5xl mx-auto rounded-lg p-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}>
-              <h1 className="text-4xl text-[white] font-bold mb-4">WildfireWatch</h1>
-              <p className="text-xl text-[white] mb-8">Real-time wildfire monitoring and resource allocation</p>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Left column for Alaska and Hawaii */}
               <div className="md:col-span-1 flex flex-col gap-6">

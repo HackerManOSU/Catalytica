@@ -1,0 +1,22 @@
+[debug] [2025-04-06T00:21:11.485Z] ----------------------------------------------------------------------
+[debug] [2025-04-06T00:21:11.487Z] Command:       /opt/homebrew/Cellar/node/23.10.0_1/bin/node /opt/homebrew/bin/firebase deploy --only functions
+[debug] [2025-04-06T00:21:11.487Z] CLI Version:   14.1.0
+[debug] [2025-04-06T00:21:11.487Z] Platform:      darwin
+[debug] [2025-04-06T00:21:11.487Z] Node Version:  v23.10.0
+[debug] [2025-04-06T00:21:11.487Z] Time:          Sat Apr 05 2025 17:21:11 GMT-0700 (Pacific Daylight Time)
+[debug] [2025-04-06T00:21:11.487Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-06T00:21:11.578Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-06T00:21:11.578Z] > authorizing via signed-in user (kabirr@oregonstate.edu)
+[debug] [2025-04-06T00:21:11.578Z] [iam] checking project catalytica-b8ad9 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-04-06T00:21:11.579Z] Checked if tokens are valid: true, expires at: 1743900906198
+[debug] [2025-04-06T00:21:11.579Z] Checked if tokens are valid: true, expires at: 1743900906198
+[debug] [2025-04-06T00:21:11.579Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/catalytica-b8ad9:testIamPermissions [none]
+[debug] [2025-04-06T00:21:11.579Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/catalytica-b8ad9:testIamPermissions x-goog-quota-user=projects/catalytica-b8ad9
+[debug] [2025-04-06T00:21:11.579Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/catalytica-b8ad9:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-04-06T00:21:11.741Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/catalytica-b8ad9:testIamPermissions 200
+[debug] [2025-04-06T00:21:11.741Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/catalytica-b8ad9:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-04-06T00:21:11.741Z] Checked if tokens are valid: true, expires at: 1743900906198
+[debug] [2025-04-06T00:21:11.741Z] Checked if tokens are valid: true, expires at: 1743900906198
+[debug] [2025-04-06T00:21:11.742Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/catalytica-b8ad9/serviceAccounts/catalytica-b8ad9@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-04-06T00:21:11.742Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/catalytica-b8ad9/serviceAccounts/catalytica-b8ad9@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}

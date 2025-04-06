@@ -9,8 +9,10 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "types": ["jest", "node"]
+    "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": ["src", "../../frontend/lib/firebase.ts"]
+  "include": [
+    "src"
+  ]
 }
