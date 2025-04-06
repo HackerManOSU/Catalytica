@@ -11,5 +11,7 @@
     "target": "es2017"
   },
   "compileOnSave": true,
-  "include": ["src", "../../frontend/lib/firebase.ts"]
+  "include": [
+    "src"
+  ]
 }

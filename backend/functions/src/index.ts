@@ -1,19 +1,34 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+// Import the Scheduler trigger and logger from Firebase Functions v2
+import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { logger } from 'firebase-functions';
+import admin from 'firebase-admin';
+import axios from 'axios';
 
-import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
+admin.initializeApp();
+const db = admin.firestore();
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// API Key
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+export const scheduledWeatherUpdate = onSchedule('every 1 minute', async (event) => {
+  try {
+    const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+      params: {
+        q: 'London',
+        appid: OPENWEATHER_API_KEY,
+        units: 'imperial',
+      },
+    });
+
+    // Log the weather data
+    logger.info('Weather update:', response.data);
+
+    // Store the weather data in Firestore
+    await db.collection('weatherUpdates').add({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      data: response.data,
+    });
+  } catch (error) {
+    logger.error('Error fetching weather data:', error);
+  }
+});
