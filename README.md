@@ -4,10 +4,10 @@ A real-time wildfire monitoring and resource allocation platform that provides c
 
 ## Features 
 
-### Real-Time Fire Monitoring 🔍
-- Live heatmap visualization of active fires across the United States 🗺️
-- Detailed fire severity tracking using NASA FIRMS data 📊
-- Custom fire reporting system for community input 📝
+### Real-Time Fire Monitoring 
+- Live heatmap visualization of active fires across the United States 
+- Detailed fire severity tracking using NASA FIRMS data 
+- Custom fire reporting system for community input 
 
 ### Environmental Data 
 - Current weather conditions 
