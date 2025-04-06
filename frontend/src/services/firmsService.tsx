@@ -116,6 +116,25 @@ function getFallbackMockData(): FIRMSData[] {
         wind_speed: 8
       }
     },
+    { 
+      latitude: 44.7749, 
+      longitude: -122.4194, 
+      brightness: 340.5, 
+      scan: 1, 
+      track: 1, 
+      acq_date: "2024-07-15", 
+      acq_time: "0400", 
+      confidence: 95, 
+      bright_t31: 290.5, 
+      frp: 500.2,
+      weather: {
+        humidity: 45,
+        temperature: 85,
+        weather_desc: "Partly Cloudy",
+        wind_direction: 270,
+        wind_speed: 8
+      }
+    },
     // More mock data entries with weather info...
     // ...existing mock data with added weather property
   ];
