@@ -4,6 +4,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
+import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
+import { MapActions } from '../utils/mapstate'; // Import map actions
 
 // Define props interface for the Map component
 interface MapProps {
@@ -30,6 +32,12 @@ const HawaiiMap = ({
   const [firmsData, setFirmsData] = useState<FIRMSData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState<boolean>(false);
+  const mapDispatch = useMapDispatch();
+  const MapState = useMapState();
+
+
+
 
   // Fetch FIRMS data (do not clear loading here)
   useEffect(() => {
@@ -48,42 +56,57 @@ const HawaiiMap = ({
     fetchData();
   }, []);
 
-  // Initialize map (if not created) and apply heatmap once firmsData is available
+  // Map initialization effect
   useEffect(() => {
-    if (firmsData.length === 0) return;
+    if (!mapContainerRef.current) return;
     
     // Define Hawaii bounds
     const hawaiiBounds = L.latLngBounds(
       [18.5, -161.0], // Southwest corner
       [22.5, -154.0]  // Northeast corner
     );
-    
-    // Create the map instance if it hasn't been created yet
-    if (!mapRef.current && mapContainerRef.current) {
-      mapRef.current = L.map(mapContainerRef.current, {
-        center,
-        zoom,
-        maxBounds: hawaiiBounds,
-        maxBoundsViscosity: 1.0,
-        minZoom: 5
-      }).setView(center, zoom);
-  
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19,
-        bounds: hawaiiBounds
-      }).addTo(mapRef.current);
-  
-      // Initially fit the map to Hawaii bounds
-      mapRef.current.fitBounds(hawaiiBounds);
-    }
-    
-    // Remove existing heatmap if it exists
-    if (mapRef.current && heatLayerRef.current) {
+
+    mapRef.current = L.map(mapContainerRef.current, {
+      center,
+      zoom,
+      maxBounds: hawaiiBounds,
+      maxBoundsViscosity: 1.0,
+      minZoom: 3
+    }).setView(center, zoom);
+
+    mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      mapDispatch(MapActions.setCurrentLatitude(lat));
+      mapDispatch(MapActions.setCurrentLongitude(lng));
+      console.log(`Clicked coordinates: ${lat}, ${lng}`);
+      console.log(MapState.currentLatitude, MapState.currentLongitude);
+      L.marker([lat, lng]).addTo(mapRef.current!);
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      bounds: hawaiiBounds
+    }).addTo(mapRef.current);
+
+    mapRef.current.fitBounds(hawaiiBounds);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array for one-time initialization
+
+  useEffect(() => {
+    if (!mapRef.current || !firmsData || firmsData.length === 0) return;
+
+    if (heatLayerRef.current) {
       mapRef.current.removeLayer(heatLayerRef.current);
       heatLayerRef.current = null;
     }
-  
+
     try {
       let firePoints: FIRMSData[] = [];
       
@@ -97,21 +120,20 @@ const HawaiiMap = ({
           firePoints = (firmsData as { results: FIRMSData[] }).results;
         } else {
           const keys = Object.keys(firmsData);
-          if (keys.length > 0 && 
-              typeof firmsData[keys[0]] === 'object' && 
-              'latitude' in firmsData[keys[0]] && 
+          if (keys.length > 0 &&
+              typeof firmsData[keys[0]] === 'object' &&
+              'latitude' in firmsData[keys[0]] &&
               'longitude' in firmsData[keys[0]]) {
             firePoints = keys.map(key => firmsData[key]);
           }
         }
       }
-  
+
       if (firePoints.length === 0) {
         console.error("Could not extract valid fire data points from API response");
         return;
       }
-      
-      // Filter to only show Hawaii wildfires
+
       const hawaiiPoints = firePoints.filter(point => 
         typeof point.latitude === 'number' && 
         typeof point.longitude === 'number' && 
@@ -121,40 +143,38 @@ const HawaiiMap = ({
         point.longitude < -154.0 && 
         point.longitude > -161.0
       );
-  
-      // Convert FIRMS data to heatmap format [lat, lng, intensity]
+
       const heatData = hawaiiPoints.map(point => {
         const intensity = Math.max(point.frp / 10, 0.5);
         return [point.latitude, point.longitude, intensity];
       });
-  
-      if (heatData.length === 0) {
-        console.warn("No valid heat points to display for Hawaii");
-        return;
-      }
-  
+
       console.log(`Creating Hawaii heatmap with ${heatData.length} fire points`);
-    
+      
       heatLayerRef.current = L.heatLayer(heatData as [number, number, number][], {
         radius: 25,
         blur: 15,
         maxZoom: 10,
         max: 10,
         gradient: {
-          0.1: '#89CFF0', // Light blue
-          0.3: '#00FF00', // Green
-          0.5: '#FFFF00', // Yellow
-          0.7: '#FFA500', // Orange
-          0.9: '#FF0000'  // Red
+          0.1: '#89CFF0',
+          0.3: '#00FF00',
+          0.5: '#FFFF00',
+          0.7: '#FFA500',
+          0.9: '#FF0000'
         }
       }).addTo(mapRef.current);
-  
-      setLoading(false);
+      
+      setLoading(false);      
+      setMapReady(true);
+
     } catch (error) {
       console.error("Error creating heatmap:", error);
       setError("Error creating heatmap visualization");
     }
-  }, [firmsData, center, zoom]);
+  }, [firmsData]); // Only depend on firmsData
+    
+
 
   // Effect to add/update markers when markers prop changes
   useEffect(() => {
@@ -201,11 +221,9 @@ const HawaiiMap = ({
   return (
     <div className="relative">
       {loading && (
-        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <LoadingSpinner />
-          </div>
-        </div>
+      <div className="loading-overlay absolute bg-gray-800 rounded-xl top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+        <LoadingSpinner />
+      </div>
       )}
       {error && (
         <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
@@ -219,8 +237,9 @@ const HawaiiMap = ({
           width: '100%',
           borderRadius: '12px',
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          overflow: 'hidden'
+          border: '1px solid rgba(255, 255, 255, 1)',
+          overflow: 'hidden',
+          visibility: mapReady ? 'visible' : 'hidden'
         }} 
         className="map-container" 
       />
