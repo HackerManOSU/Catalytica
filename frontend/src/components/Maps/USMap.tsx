@@ -20,6 +20,7 @@ interface MapProps {
 }
 
 const USMap = ({ 
+  zoom = 4,
   markers = [],
   fullscreen = false
 }: MapProps) => {
@@ -87,8 +88,8 @@ const USMap = ({
     mapRef.current = L.map(mapContainerRef.current, {
       maxBounds: usBounds.pad(0.1), // Add 10% padding around the bounds to allow slight panning
       maxBoundsViscosity: 1.0, // Prevent panning outside bounds
-      minZoom: 3.5, // Allow slightly more zoom out to see context
-      zoomSnap: 0.1, // Allow finer zoom increments for better fitting
+      minZoom: 4, // Allow slightly more zoom out to see context
+      zoomSnap: 0.5, // Allow finer zoom increments for better fitting
     });
 
     // Register click event
