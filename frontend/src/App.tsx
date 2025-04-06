@@ -37,17 +37,19 @@ function App() {
 
   return (
     <div className="p-4 bg-[black] min-h-screen">
-      <div className="flex-grow flex items-center justify-center mt-5">
         <motion.div
-          className="text-white text-center"
+          className=" max-w-5xl  mx-auto text-white text-center mb-4 mt-4 rounded-lg bg-gray-900 "
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h2 className="text-4xl font-bold mb-4">WildfireWatch</h2>
-          <p className="text-xl mb-8">Real-time wildfire monitoring and resource allocation</p>
+         <h1 className="text-white text-[5rem] font-bold ">
+             Catalytica
+           </h1>
+           <p className="text-white text-[1.5rem] opacity-80">
+             Realtime Wildfire response
+           </p>
         </motion.div>
-      </div>
 
       
       
