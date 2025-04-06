@@ -1,6 +1,6 @@
 # Catalytica 🔥
 
-A real-time wildfire monitoring and resource allocation platform that provides critical data and AI-powered recommendations for emergency response. 🛟
+A real-time wildfire monitoring and resource allocation platform that provides critical data and AI-powered recommendations for emergency response. 
 
 ## Features 
 
