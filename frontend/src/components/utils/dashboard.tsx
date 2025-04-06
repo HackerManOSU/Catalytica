@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import {useState, useEffect} from 'react';
+import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
 
 const Speedometer: React.FC<{ value: number }> = ({ value }) => {
     return (
@@ -35,6 +37,21 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
   };
 
 const Dashboard: React.FC = () => {
+    const fireseverity = useMapState().currentSeverity;
+    const firepopulation = useMapState().currentPopulation;
+    const acresburned = useMapState().totalAcresBurned;
+    const selectedregion = useMapState().selectedRegion;
+    const currentweather = useMapState().currentWeather;
+    const currentwindspeed = useMapState().currentWindSpeed;
+    const currenthumidity = useMapState().currentHumidity;
+    const currenttemperature = useMapState().currentTemperature;
+    const mapDispatch = useMapDispatch();
+
+    useEffect (() => {
+        
+    }
+    , []);
+
   return (
     <motion.div
       className="text-white w-full"

@@ -3,6 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
+import { useMapDispatch, useMapState } from '../utils/mapstate'; // Import the map dispatch
+import { MapActions } from '../utils/mapstate'; // Import map actions
 
 // Define props interface for the Map component
 interface MapProps {
@@ -23,6 +25,8 @@ const AlaskaMap = ({
   fullscreen = false
 }: MapProps) => {
   // Create a reference to store the map instance
+  const mapDispatch = useMapDispatch();
+  const MapState = useMapState();
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
@@ -69,6 +73,20 @@ const AlaskaMap = ({
       minZoom: 3
     }).setView(center, zoom);
 
+    // Add click event listener to update global state
+    mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      
+      // Dispatch actions to update longitude and latitude in global state
+      mapDispatch(MapActions.setCurrentLatitude(lat));
+      mapDispatch(MapActions.setCurrentLongitude(lng));
+      console.log(`Clicked coordinates: ${lat}, ${lng}`);
+      console.log(MapState.currentLatitude, MapState.currentLongitude);
+      
+      // Optional: Add a marker to show the clicked location
+      L.marker([lat, lng]).addTo(mapRef.current!);
+    });
+
     // Add dark-themed tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       subdomains: 'abcd',
@@ -86,7 +104,7 @@ const AlaskaMap = ({
         mapRef.current = null;
       }
     };
-  }, [center, zoom]);
+  }, [center, zoom, mapDispatch]);
 
   // Effect to add/update heatmap when FIRMS data changes
   useEffect(() => {
