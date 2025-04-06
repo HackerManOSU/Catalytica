@@ -1,4 +1,4 @@
-export interface weather {
+export interface Weather {
     weather_desc: string;
     moisture: number;
     wind_speed: number;
