@@ -24,6 +24,8 @@ function haversineDistance(
   }
 
   const Speedometer: React.FC<{ value: number }> = ({ value }) => {
+    
+    
     const arcLength = 283; // Length of the arc (half of the circle's circumference)
     const offset = (1 - value / 10) * arcLength; // Adjusted for a 0–10 scale
   
@@ -116,12 +118,14 @@ function haversineDistance(
     }, [mapState.currentWindSpeed, mapState.currentHumidity, mapState.currentTemperature, mapState.currentWeather]);
   
     const weatherAdjustment = getWeatherAdjustment();
+    
     const baseSeverity = mapState.currentSeverity
       ? (mapState.currentSeverity >= 1000 
          ? 10 
          : 1 + (mapState.currentSeverity * 9) / 1000)
       : 0;
     const scaledSeverity = Math.min(10, baseSeverity * weatherAdjustment);
+    
 
       const resetDashboardState = useCallback(() => {
         mapDispatch(MapActions.setTotalactiveFires(0));
@@ -231,11 +235,27 @@ function haversineDistance(
           if (nearestFires[0]) {
             const closest = nearestFires[0];
       
+            // Store weather-related data
             mapDispatch(MapActions.setCurrentWeather(closest.weather?.weather_desc || "No data"));
             mapDispatch(MapActions.setCurrentTemperature(closest.weather?.temperature || 0));
             mapDispatch(MapActions.setCurrentHumidity(closest.weather?.humidity || 0));
             mapDispatch(MapActions.setCurrentWindSpeed(closest.weather?.wind_speed || 0));
-            mapDispatch(MapActions.setCurrentSeverity(closest.frp || 0));
+            
+            // Store raw FRP in a temporary variable, NOT in state yet
+            const rawFrp = closest.frp || 0;
+            
+            // Now calculate the scaled severity using the same formula
+            const weatherAdjustment = getWeatherAdjustment();
+            const baseSeverity = rawFrp >= 1000 
+              ? 10 
+              : 1 + (rawFrp * 9) / 1000;
+            const calculatedSeverity = Math.min(10, baseSeverity * weatherAdjustment);
+            
+            // Round to 1 decimal place to match the speedometer display
+            const roundedSeverity = parseFloat(calculatedSeverity.toFixed(1));
+            
+            // Now set the calculated and rounded value
+            mapDispatch(MapActions.setCurrentSeverity(roundedSeverity));
 
             setIsLoadingLocation(true);
 
@@ -260,7 +280,7 @@ function haversineDistance(
       
     
       fetchFirmsUpdates();
-    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch, resetDashboardState]);
+    }, [mapState.currentLatitude, mapState.currentLongitude, mapDispatch, resetDashboardState, getWeatherAdjustment]);
     
   return (
     <motion.div
@@ -273,7 +293,7 @@ function haversineDistance(
         {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
-          <Speedometer value={+scaledSeverity.toFixed(2)} />
+          <Speedometer value={mapState.currentSeverity} />
           <p className="mt-4 text-orange-500 font-bold">Risk</p>
           {weatherAdjustment !== 1 && (
             <div className="mt-2 text-sm">
