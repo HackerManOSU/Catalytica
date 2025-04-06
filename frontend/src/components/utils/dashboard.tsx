@@ -6,6 +6,8 @@ import ReportFireModal from './ReportFireModal';
 import { db } from '../../Lib/firebase';
 import Recommendation from './Recommendation';
 
+
+
 function haversineDistance(
     lat1: number, 
     lon1: number, 
@@ -72,21 +74,33 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
 
     useEffect(() => {
  
-      const fetchPopulation = async (lat: number, lng: number): Promise<number> => {
-        const username = "anthony11111"; // 🔑 Replace with your real username
-        const url = `https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lng}&username=${username}`;
-      
+      const fetchPopulationFromJSON = async (county: string): Promise<number> => {
         try {
-          const res = await fetch(url);
+          const res = await fetch("/assets/population.json");
           const data = await res.json();
-          const population = data?.geonames?.[0]?.population || 0;
-          console.log("👥 Population:", population);
-          return population;
+      
+          const normalizedCounty = county.trim().toLowerCase();
+      
+          for (const row of data) {
+            const rawName = row["table with row headers in column A and column headers in rows 3 through 4 (leading dots indicate sub-parts)"];
+            if (!rawName) continue;
+      
+            const cleanedName = rawName.replace(/^\./, "").trim().toLowerCase();
+      
+            if (cleanedName.startsWith(normalizedCounty)) {
+              const latestPopStr = row["__5"]; // 2024 population
+              const population = parseInt(latestPopStr.replace(/,/g, ""), 10);
+              return isNaN(population) ? 0 : population;
+            }
+          }
+      
+          return 0;
         } catch (err) {
-          console.error("GeoNames population fetch failed:", err);
+          console.error("Failed to load or parse local population data:", err);
           return 0;
         }
       };
+      
       
       
       const fetchNearestCity = async (lat: number, lng: number) => {
@@ -172,7 +186,7 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
             mapDispatch(MapActions.setCurrentSeverity(closest.frp || 0));
             const city = await fetchNearestCity(closest.latitude, closest.longitude);
             mapDispatch(MapActions.setSelectedRegion(city));
-            const population = await fetchPopulation(closest.latitude, closest.longitude);
+            const population = await fetchPopulationFromJSON(city);
             mapDispatch(MapActions.setCurrentPopulation(population));
           }
       
@@ -246,7 +260,7 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           <h2 className="text-2xl font-semibold mb-4">Total Population</h2>
           <div className="flex flex-col ">
             <div>
-              <p className="text-5xl font-bold text-orange-500">{mapState.currentPopulation || 0}</p>
+              <p className="text-5xl font-bold text-orange-500">{mapState.currentPopulation || "N/A"}</p>
               <p className="text-sm text-gray-400">People</p>
             </div>
             <h2 className="text-2xl font-semibold mb-4 mt-4">Area</h2>
