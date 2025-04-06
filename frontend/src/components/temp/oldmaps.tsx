@@ -14,16 +14,6 @@ interface MapProps {
     details?: string;
   }>;
 }
-// Define props interface for the Map component
-interface MapProps {
-  center?: [number, number]; // [latitude, longitude]
-  zoom?: number;
-  markers?: Array<{
-    position: [number, number];
-    severity: number;
-    details?: string;
-  }>;
-}
 
 const Map = ({ 
   center = [37.8, -96], // Default center of USA
