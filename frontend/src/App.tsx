@@ -7,12 +7,16 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Dashboard from "./components/utils/dashboard";
 import UsFireTable from "./components/utils/usfiretable";
+import ReportFireModal from "./components/utils/ReportFireModal"
+
 
 function App() {
   // Add state for fullscreen maps
   const [alaskaFullscreen, setAlaskaFullscreen] = useState(false);
   const [hawaiiFullscreen, setHawaiiFullscreen] = useState(false);
   const [usFullscreen, setUsFullscreen] = useState(false);
+  const [showreportmodal, setshowreportmodal] = useState(false);
+
 
   useEffect(() => {
     requestAndStoreLocation();
@@ -52,8 +56,9 @@ function App() {
               </div>
             </div>
           </div>
+          
           <motion.div
-            className="max-w-5xl mx-auto rounded-lg "
+            className="max-w-5xl mx-auto rounded-lg mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -161,6 +166,21 @@ function App() {
               </h1>
 
               <UsFireTable />
+
+              <div className="flex justify-center my-8">
+                <button onClick={()=>setshowreportmodal(true)} className="cursor-pointer group relative flex gap-1.5 px-8 py-4 bg-orange-500 bg-opacity-80 text-[#f1f1f1] rounded-3xl hover:bg-opacity-70 transition font-semibold shadow-md">
+                  Report
+                  <div className="absolute opacity-0 -bottom-full rounded-md py-2 px-2 bg-black bg-opacity-70 left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg">
+                    Report
+                  </div>
+                </button>
+                </div>
+
+                <ReportFireModal 
+                  isOpen={showreportmodal} 
+                  onClose={() => setshowreportmodal(false)} 
+                />
+
             </motion.div>
           </div>
         </>

@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import {useState, useEffect, useCallback} from 'react';
 import { MapActions, useMapState,  useMapDispatch } from './mapstate'; // Import the map dispatch
-import ReportFireModal from './ReportFireModal';
 import Recommendation from './Recommendation';
 import { getFIRMS, FIRMSData } from '../../services/firmsService';
+import FireAnimation from './fireicon'; // Add this import
 
 
 function haversineDistance(
@@ -68,13 +68,60 @@ function haversineDistance(
   const Dashboard: React.FC = () => {
     const mapState = useMapState();
     const mapDispatch = useMapDispatch(); 
-    const [showreportmodal, setshowreportmodal] = useState(false);
+
+    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+    const getWeatherAdjustment = useCallback(() => {
+      let adjustment = 1.0; // Default multiplier (no change)
+      
+      // Wind speed adjustment - increases severity
+      if (mapState.currentWindSpeed) {
+        // Wind over 15mph significantly increases fire risk
+        const windFactor = Math.min((mapState.currentWindSpeed / 15) * 0.3, 0.5);
+        adjustment += windFactor;
+      }
+      
+      // Humidity adjustment - decreases severity
+      if (mapState.currentHumidity) {
+        // Higher humidity reduces fire risk
+        const humidityFactor = Math.min((mapState.currentHumidity / 100) * 0.4, 0.4);
+        adjustment -= humidityFactor;
+      }
+      
+      // Temperature adjustment - increases severity
+      if (mapState.currentTemperature) {
+        // Temperatures above 80°F increase fire risk
+        const tempFactor = mapState.currentTemperature > 80 
+          ? Math.min(((mapState.currentTemperature - 80) / 30) * 0.3, 0.3)
+          : 0;
+        adjustment += tempFactor;
+      }
+      
+      // Weather conditions adjustment
+      const weatherLower = (mapState.currentWeather || "").toLowerCase();
+      if (weatherLower.includes("rain") || weatherLower.includes("shower")) {
+        adjustment -= 0.3; // Rain significantly reduces fire risk
+      } else if (weatherLower.includes("snow") || weatherLower.includes("sleet")) {
+        adjustment -= 0.5; // Snow/ice conditions drastically reduce fire risk
+      } else if (weatherLower.includes("fog") || weatherLower.includes("mist")) {
+        adjustment -= 0.2; // Foggy conditions reduce fire risk slightly
+      } else if (weatherLower.includes("thunder") || weatherLower.includes("lightning")) {
+        adjustment += 0.2; // Lightning can increase fire risk
+      } else if (weatherLower.includes("clear") || weatherLower.includes("sunny")) {
+        adjustment += 0.1; // Clear conditions slightly increase risk
+      }
+      
+      // Keep adjustment within reasonable bounds (0.5 to 1.7)
+      return Math.max(0.5, Math.min(adjustment, 1.7));
+    }, [mapState.currentWindSpeed, mapState.currentHumidity, mapState.currentTemperature, mapState.currentWeather]);
   
-    const scaledSeverity = mapState.currentSeverity
+    const weatherAdjustment = getWeatherAdjustment();
+    const baseSeverity = mapState.currentSeverity
       ? (mapState.currentSeverity >= 1000 
          ? 10 
          : 1 + (mapState.currentSeverity * 9) / 1000)
       : 0;
+    const scaledSeverity = Math.min(10, baseSeverity * weatherAdjustment);
 
       const resetDashboardState = useCallback(() => {
         mapDispatch(MapActions.setTotalactiveFires(0));
@@ -124,11 +171,12 @@ function haversineDistance(
         const response = await fetch(url);
         const data = await response.json();
       
-        const city = data?.results?.[0]?.components?.city ||
+        const city = data?.results?.[0]?.components?.county ||
+                     data?.results?.[0]?.components?.city ||
                      data?.results?.[0]?.components?.town ||
                      data?.results?.[0]?.components?.village ||
-                     data?.results?.[0]?.components?.county ||
                      "Unknown";
+                     
         return city;
       };
       
@@ -160,7 +208,7 @@ function haversineDistance(
               );
               const distanceMiles = distance * 0.621371;
       
-              if (distanceMiles <= 25) {
+              if (distanceMiles <= 15) {
                 allFires.push({ ...fireEntry, distance: distanceMiles });
               }
             }
@@ -184,10 +232,15 @@ function haversineDistance(
             mapDispatch(MapActions.setCurrentHumidity(closest.weather?.humidity || 0));
             mapDispatch(MapActions.setCurrentWindSpeed(closest.weather?.wind_speed || 0));
             mapDispatch(MapActions.setCurrentSeverity(closest.frp || 0));
+
+            setIsLoadingLocation(true);
+
             const city = await fetchNearestCity(closest.latitude, closest.longitude);
             mapDispatch(MapActions.setSelectedRegion(city));
             const population = await fetchPopulationFromJSON(city);
             mapDispatch(MapActions.setCurrentPopulation(population));
+
+            setIsLoadingLocation(false);
             } else {
               resetDashboardState();
             }
@@ -196,6 +249,8 @@ function haversineDistance(
           } catch (error) {
             console.error("Error fetching fire data:", error);
             resetDashboardState();
+            setIsLoadingLocation(false); // Ensure loading state is turned off on error
+
         }
       };
       
@@ -210,35 +265,36 @@ function haversineDistance(
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="flex justify-between mb-4">
-      <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
-      <button onClick={()=>setshowreportmodal(true)} className="cursor-pointer group relative flex gap-1.5 px-8 py-4 bg-orange-500 bg-opacity-80 text-[#f1f1f1] rounded-3xl hover:bg-opacity-70 transition font-semibold shadow-md">
-        Report
-        <div className="absolute opacity-0 -bottom-full rounded-md py-2 px-2 bg-black bg-opacity-70 left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg">
-          Report
-        </div>
-      </button>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Severity Speedometer */}
-        <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+        <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
           <Speedometer value={+scaledSeverity.toFixed(2)} />
           <p className="mt-4 text-orange-500 font-bold">Risk</p>
+          {weatherAdjustment !== 1 && (
+            <div className="mt-2 text-sm">
+              <p className={`${weatherAdjustment > 1 ? 'text-red-400' : 'text-green-400'}`}>
+                Weather {weatherAdjustment > 1 ? 'increases' : 'decreases'} risk by {Math.abs((weatherAdjustment - 1) * 100).toFixed(0)}%
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Active Fires */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className="bg-gray-800 rounded-lg p-6 border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Active Fires</h2>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-5xl font-bold text-orange-500">{mapState.totalactiveFires || 0}</p>
-              <p className="text-sm text-gray-400">Current Fires in 100 mile radius</p>
+              <p className="text-sm text-gray-400">Current Fires in 15 mile radius</p>
             </div>
             
           </div>
           <h2 className="text-2xl font-semibold  mt-4">Weather</h2>
           <div>
+            <p className="text-1xl font-bold text-orange-500">
+                Conditions: {mapState.currentWeather || "None"}
+            </p>
             <p className="text-1xl font-bold text-orange-500">
                 Temp: {mapState.currentTemperature !== null 
                     ? `${Math.round(mapState.currentTemperature)}°F` 
@@ -259,16 +315,30 @@ function haversineDistance(
         </div>
 
         {/* Affected Area */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className="bg-gray-800 rounded-lg p-6 border-3 border-orange-400">
           <h2 className="text-2xl font-semibold mb-4">Total Population</h2>
-          <div className="flex flex-col ">
+          <div className="flex flex-col">
             <div>
-              <p className="text-5xl font-bold text-orange-500">{mapState.currentPopulation || "N/A"}</p>
-              <p className="text-sm text-gray-400">People</p>
+              {isLoadingLocation ? (
+                <div className="flex items-center justify-center py-4">
+                  <FireAnimation size={60} isVisible={true} />
+                </div>
+              ) : (
+                <>
+                  <p className="text-5xl font-bold text-orange-500">{mapState.currentPopulation || "N/A"}</p>
+                  <p className="text-sm text-gray-400">People</p>
+                </>
+              )}
             </div>
             <h2 className="text-2xl font-semibold mb-4 mt-4">Area</h2>
             <div>
-              <p className="text-5xl font-bold text-orange-500">{mapState.selectedRegion || "None"}</p>
+              {isLoadingLocation ? (
+                <div className="flex items-center justify-center py-4">
+                  <FireAnimation size={60} isVisible={true} />
+                </div>
+              ) : (
+                <p className="text-5xl font-bold text-orange-500">{mapState.selectedRegion || "None"}</p>
+              )}
             </div>
           </div>
         </div>
@@ -276,10 +346,7 @@ function haversineDistance(
 
       <Recommendation />
 
-      <ReportFireModal 
-        isOpen={showreportmodal} 
-        onClose={() => setshowreportmodal(false)} 
-      />
+
     </motion.div>
     
   );
