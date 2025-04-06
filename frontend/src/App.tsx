@@ -50,6 +50,7 @@ function App() {
                   <div className="absolute inset-0 z-0">
                     <AlaskaMap />
                   </div>
+                  {/*}
                   <button
                     onClick={() => setAlaskaFullscreen(true)}
                     className="absolute top-2 right-2 text-white bg-gray-800 hover:bg-gray-700 p-1 rounded-md z-[999]"
@@ -59,6 +60,7 @@ function App() {
                       <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
                   </button>
+                  */}
                   </div>
                 </div>
                 <div style={{ height: "300px" }}>
@@ -69,6 +71,7 @@ function App() {
                   <div className="absolute inset-0 z-0">
                     <HawaiiMap />
                   </div>
+                  {/*
                   <button
                     onClick={() => setHawaiiFullscreen(true)}
                     className="absolute top-2 right-2 text-white bg-gray-800 hover:bg-gray-700 p-1 rounded-md z-[999]"
@@ -78,6 +81,7 @@ function App() {
                         <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
                       </svg>
                     </button>
+                  */}
                   </div>
                 </div>
               </div>
@@ -91,15 +95,17 @@ function App() {
                 <div className="absolute inset-0 z-0">
                   <USMap />
                 </div>
+                {/*
                 <button
                   onClick={() => setUsFullscreen(true)}
                   className="absolute top-2 right-2 text-white bg-gray-800 hover:bg-gray-700 p-1 rounded-md z-[999]"
                   title="View fullscreen"
-                >
+                > 
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
                   </button>
+                */}
                 </div>
               </div>
             </div>
