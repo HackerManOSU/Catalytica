@@ -158,7 +158,7 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
                     );
                     const distanceMiles = distance * 0.621371;
 
-                    if (distanceMiles <= 100) {
+                    if (distanceMiles <= 25) {
                       allFires.push({ ...fireEntry, distance: distanceMiles });
                     }
             
