@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
+import LoadingSpinner from '../utils/Loading/LoadingSpinner';
 
 // Define props interface for the Map component
 interface MapProps {
@@ -36,64 +37,35 @@ const USMap = ({
     [49.5, -66.0]   // Northeast corner
   );
 
-
-  // Fetch FIRMS data
+  // Fetch FIRMS data only once when component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         // Fetch fire data
-        const data = await fetchRecentFIRMSData(1000);
+        const data = await fetchRecentFIRMSData();
         setFirmsData(data);
         setError(null);
       } catch (error) {
         console.error("Failed to fetch FIRMS data:", error);
         setError("Failed to fetch wildfire data.");
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, []); // Empty dependency array - fetch only once
 
-  // Initialize or reinitialize map when fullscreen changes
+  // Update the container size when fullscreen changes
   useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
-  
-    if (!mapContainerRef.current) return;
-  
-    // Create Leaflet map instance with bounds
-    mapRef.current = L.map(mapContainerRef.current, {
-      center,
-      zoom,
-      maxBounds: usBounds,
-      maxBoundsViscosity: 1.0,
-      minZoom: 4
-    }).setView(center, zoom);
-
-    // Add OpenStreetMap tile layer with dark theme
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(mapRef.current);
-
-    // Apply the heatmap if data is available
-    if (firmsData && firmsData.length > 0) {
-      applyHeatmap();
-    }
-
-    // Cleanup function to remove map when component unmounts
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [center, zoom, fullscreen]); // Re-initialize when fullscreen changes
+    if (!mapRef.current) return;
+    
+    // After the container resizes due to fullscreen change,
+    // invalidate the map size so Leaflet recalculates dimensions
+    setTimeout(() => {
+      mapRef.current?.invalidateSize();
+    }, 100);
+    
+  }, [fullscreen]); // React only to fullscreen changes
 
   // Separate function to apply heatmap
   const applyHeatmap = () => {
@@ -182,7 +154,27 @@ const USMap = ({
   
   // Effect to apply heatmap when FIRMS data changes
   useEffect(() => {
+    if (firmsData.length === 0) return;
+    
+    // Create the map instance if it hasn't been created yet
+    if (!mapRef.current && mapContainerRef.current) {
+      mapRef.current = L.map(mapContainerRef.current, {
+        center,
+        zoom,
+        maxBounds: usBounds,
+        maxBoundsViscosity: 1.0,
+        minZoom: 4
+      }).setView(center, zoom);
+  
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(mapRef.current);
+    }
+    
+    // Apply the heatmap based on the fetched firm's data
     applyHeatmap();
+    setLoading(false);
   }, [firmsData]);
 
   // Effect to add/update markers when markers prop changes
@@ -227,17 +219,17 @@ const USMap = ({
         );
       }
     });
-  }, [markers, mapRef.current]);
+  }, [markers]);
 
 
   return (
     <div className="relative">
       {loading && (
-        <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <p>Loading wildfire data...</p>
-          </div>
+      <div className="loading-overlay absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10 text-white">
+        <div className="p-4 bg-gray-800 rounded-lg">
+          <LoadingSpinner />
         </div>
+      </div>
       )}
       {error && (
         <div className="error-message absolute top-2 left-2 right-2 z-10 bg-red-600 text-white p-3 rounded-md shadow-lg">
@@ -247,7 +239,7 @@ const USMap = ({
       <div 
         ref={mapContainerRef} 
         style={{ 
-          height: fullscreen ? 'calc(100vh - 48px)' : '600px', 
+          height: fullscreen ? 'calc(100vh - 48px)' : '600px',
           width: '100%',
           borderRadius: '12px',
           boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)',

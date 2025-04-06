@@ -36,7 +36,7 @@ const AlaskaMap = ({
       try {
         setLoading(true);
         // Fetch fire data - use the same parameter as USMap
-        const data = await fetchRecentFIRMSData(1000);
+        const data = await fetchRecentFIRMSData();
         setFirmsData(data);
         setError(null);
       } catch (error) {
