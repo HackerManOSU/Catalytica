@@ -1,18 +1,75 @@
 import axios from 'axios';
 
-export interface FIRMSData {
-  latitude: number;
-  longitude: number;
-  brightness: number;
-  scan: number;
-  track: number;
+interface FIRMSData {
   acq_date: string;
   acq_time: string;
-  confidence: number;
   bright_t31: number;
+  brightness: number;
+  confidence: number;
+  country_id: string;
+  daynight: string;
   frp: number;
-  [key: string]: any; // For any additional properties
+  instrument: string;
+  latitude: number;
+  longitude: number;
+  satellite: string;
+  scan: number;
+  track: number;
+  version: string;
+  weather: {
+    humidity: number;
+    temperature: number;
+    weather_desc: string;
+    wind_direction: number;
+    wind_speed: number;
+  };
 }
+
+// Firestore reference to your collection (adjust if necessary)
+const FIRMS_COLLECTION = 'firms'; // The collection name in Firestore
+
+export const getFIRMS = async (): Promise<FIRMSData[]> => {
+  try {
+    const snapshot = await firestore().collection(FIRMS_COLLECTION).get();
+    const firmsData: FIRMSData[] = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Push the formatted data into the array
+      firmsData.push({
+        acq_date: data.acq_date || '',
+        acq_time: data.acq_time || '',
+        bright_t31: data.bright_t31 || 0,
+        brightness: data.brightness || 0,
+        confidence: data.confidence || 0,
+        country_id: data.country_id || '',
+        daynight: data.daynight || '',
+        frp: data.frp || 0,
+        instrument: data.instrument || '',
+        latitude: data.latitude || 0,
+        longitude: data.longitude || 0,
+        satellite: data.satellite || '',
+        scan: data.scan || 0,
+        track: data.track || 0,
+        version: data.version || '',
+        weather: {
+          humidity: data.weather?.humidity || 0,
+          temperature: data.weather?.temperature || 0,
+          weather_desc: data.weather?.weather_desc || '',
+          wind_direction: data.weather?.wind_direction || 0,
+          wind_speed: data.weather?.wind_speed || 0,
+        },
+      });
+    });
+
+    return firmsData;
+  } catch (err) {
+    console.error('Error fetching FIRMS data:', err);
+    throw new Error('Failed to fetch FIRMS data');
+  }
+};
+
 
 /**
  * Fetch recent fire data from NASA FIRMS API
