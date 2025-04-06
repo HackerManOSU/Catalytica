@@ -58,16 +58,21 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
           fontSize="30" 
           fill="#ff9966"
         >
-          {value}%
+          {value}
         </text>
       </svg>
     );
   };
 
+
   const Dashboard: React.FC = () => {
     const mapState = useMapState();
     const mapDispatch = useMapDispatch(); 
     const [showreportmodal, setshowreportmodal] = useState(false);
+
+    const scaledSeverity = mapState.currentSeverity
+    ? Math.min(10, 1 + (mapState.currentSeverity * 9) / 1000)
+    : 0;
 
     
     
@@ -220,7 +225,7 @@ const Speedometer: React.FC<{ value: number }> = ({ value }) => {
         {/* Severity Speedometer */}
         <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
           <h2 className="text-2xl font-semibold mb-4">Fire Severity</h2>
-          <Speedometer value={+((mapState.currentSeverity || 0) * 10).toFixed(1)} />
+          <Speedometer value={+scaledSeverity.toFixed(2)} />
           <p className="mt-4 text-orange-500 font-bold">Risk</p>
         </div>
 
