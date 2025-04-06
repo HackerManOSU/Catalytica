@@ -4,8 +4,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { FIRMSData, fetchRecentFIRMSData } from '../../services/firmsService';
 import LoadingSpinner from '../utils/Loading/LoadingSpinner';
-import { useMapDispatch, useMapState } from '../utils/mapstate'; 
-import { MapActions } from '../utils/mapstate'; 
+import { useMapDispatch, useMapState } from '../utils/mapstate';
+import { MapActions } from '../utils/mapstate';
 import './border.css';
 
 interface MapProps {
@@ -35,6 +35,15 @@ const HawaiiMap = ({
   const mapDispatch = useMapDispatch();
   const MapState = useMapState();
 
+  // Function to handle coordinates update - transferred from USMap
+  const handleCoordinateUpdate = (lat: number, lng: number) => {
+    mapDispatch(MapActions.setCurrentLatitude(lat));
+    mapDispatch(MapActions.setCurrentLongitude(lng));
+    console.log(`Clicked coordinates: ${lat}, ${lng}`);
+    console.log(MapState.currentLatitude, MapState.currentLongitude);
+    L.marker([lat, lng]).addTo(mapRef.current!);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -54,8 +63,8 @@ const HawaiiMap = ({
     if (!mapContainerRef.current) return;
     
     const hawaiiBounds = L.latLngBounds(
-      [18.5, -161.0], 
-      [22.5, -154.0]  
+      [18.5, -161.0],
+      [22.5, -154.0]
     );
 
     mapRef.current = L.map(mapContainerRef.current, {
@@ -68,11 +77,7 @@ const HawaiiMap = ({
 
     mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
-      mapDispatch(MapActions.setCurrentLatitude(lat));
-      mapDispatch(MapActions.setCurrentLongitude(lng));
-      console.log(`Clicked coordinates: ${lat}, ${lng}`);
-      console.log(MapState.currentLatitude, MapState.currentLongitude);
-      L.marker([lat, lng]).addTo(mapRef.current!);
+      handleCoordinateUpdate(lat, lng);
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -89,7 +94,25 @@ const HawaiiMap = ({
         mapRef.current = null;
       }
     };
-  }, []); 
+  }, []);
+
+  // Map resize handling for fullscreen mode
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    setTimeout(() => {
+      mapRef.current?.invalidateSize();
+      const hawaiiBounds = L.latLngBounds(
+        [18.5, -161.0],
+        [22.5, -154.0]
+      );
+      mapRef.current?.fitBounds(hawaiiBounds, {
+        padding: [20, 20],
+        animate: true
+      });
+    }, 100);
+    
+  }, [fullscreen]);
 
   useEffect(() => {
     if (!mapRef.current || !firmsData || firmsData.length === 0) return;
@@ -98,6 +121,13 @@ const HawaiiMap = ({
       mapRef.current.removeLayer(heatLayerRef.current);
       heatLayerRef.current = null;
     }
+
+    // Clear any existing fire markers
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.CircleMarker) {
+        mapRef.current?.removeLayer(layer);
+      }
+    });
 
     try {
       let firePoints: FIRMSData[] = [];
@@ -136,27 +166,161 @@ const HawaiiMap = ({
         point.longitude > -161.0
       );
 
-      const heatData = hawaiiPoints.map(point => {
-        const intensity = Math.max(point.frp / 10, 0.5);
+      // Define FRP thresholds as in USMap
+      const FRP_LOW = 100;      // Normal fires
+      const FRP_MEDIUM = 400;   // Medium fires
+      const FRP_HIGH = 800;     // High fires
+      const FRP_EXTREME = 1500; // Extreme fires
+  
+      // Separate fires by FRP categories
+      const lowFRPPoints = hawaiiPoints.filter(point => point.frp < FRP_LOW);
+      const mediumFRPPoints = hawaiiPoints.filter(point => point.frp >= FRP_LOW && point.frp < FRP_HIGH);
+      const highFRPPoints = hawaiiPoints.filter(point => point.frp >= FRP_HIGH && point.frp < FRP_EXTREME);
+      const extremeFRPPoints = hawaiiPoints.filter(point => point.frp >= FRP_EXTREME);
+
+      // Map low FRP fires for the heat layer
+      const heatData = lowFRPPoints.map(point => {
+        const frp = point.frp || 0;
+        const intensity = Math.max(0.5, Math.min(5, frp / 100));
         return [point.latitude, point.longitude, intensity];
       });
 
-      console.log(`Creating Hawaii heatmap with ${heatData.length} fire points`);
+      console.log(`Creating Hawaii heatmap with ${heatData.length} low FRP fire points`);
       
+      // Create heat layer for low FRP fires
       heatLayerRef.current = L.heatLayer(heatData as [number, number, number][], {
         radius: 25,
         blur: 15,
         maxZoom: 10,
         max: 10,
         gradient: {
-          0.1: '#89CFF0',
-          0.3: '#00FF00',
+          0.1: '#87CEFA',
+          0.3: '#98FB98',
           0.5: '#FFFF00',
-          0.7: '#FFA500',
-          0.9: '#FF0000'
+          0.6: '#FFA500',
+          0.7: '#FF4500',
+          0.8: '#FF0000',
+          0.9: '#8B0000'
         }
       }).addTo(mapRef.current);
       
+      // Add medium FRP fires as orange markers
+      mediumFRPPoints.forEach(point => {
+        const baseRadius = 10 + (point.frp / 100);
+        const circleMarker = L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius,
+          fillColor: '#FFA500', // Orange
+          color: '#FFA500',
+          weight: 1,
+          fillOpacity: 0.7,
+          interactive: true
+        }).bindPopup(`<strong>Fire</strong><br>FRP: ${point.frp.toFixed(1)} MW`)
+          .addTo(mapRef.current!);
+          
+        // Add click handler for medium FRP markers
+        circleMarker.on('click', function(e) {
+          // Stop propagation to prevent the map's click event from firing
+          L.DomEvent.stopPropagation(e);
+          
+          const { lat, lng } = e.target.getLatLng();
+          handleCoordinateUpdate(lat, lng);
+        });
+      });
+      
+      // Add high FRP fires as bright red markers with radius based on FRP
+      highFRPPoints.forEach(point => {
+        // Calculate radius based on FRP value
+        const baseRadius = 20 + (point.frp / 100); 
+        
+        // Create the main bright red marker
+        const mainMarker = L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius,
+          fillColor: '#FF0000', // Bright Red
+          color: '#FF0000',
+          weight: 1,
+          fillOpacity: 0.8,
+          interactive: true
+        }).bindPopup(`<strong>Major Fire</strong><br>FRP: ${point.frp.toFixed(1)} MW`)
+          .addTo(mapRef.current!);
+          
+        // Add click handler for high FRP markers
+        mainMarker.on('click', function(e) {
+          L.DomEvent.stopPropagation(e);
+          const { lat, lng } = e.target.getLatLng();
+          handleCoordinateUpdate(lat, lng);
+        });
+          
+        // Add a pulsing effect with a second marker
+        L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius * 1.5,
+          fillColor: '#FF0000',
+          color: '#FF0000',
+          weight: 0.5,
+          fillOpacity: 0.3,
+          className: 'pulse-marker',
+          interactive: false
+        }).addTo(mapRef.current!);
+      });
+      
+      // For extreme FRP fires, add multiple concentric markers to increase visibility at any zoom level
+      extremeFRPPoints.forEach(point => {
+        // Base radius calculation with higher factor for extreme fires
+        const baseRadius = 30 + (point.frp / 500);
+        
+        // Track the main interactive circle
+        let mainCircle: L.CircleMarker | null = null;
+        
+        // Add multiple concentric circles with decreasing opacity
+        for (let i = 0; i < 4; i++) {
+          const radiusMultiplier = 1 + (i * 0.5); // 1, 1.5, 2, 2.5
+          const opacityDivisor = 1 + i; // 1, 2, 3, 4
+          
+          const circleMarker = L.circleMarker([point.latitude, point.longitude], {
+            radius: baseRadius * radiusMultiplier,
+            fillColor: '#FF0000', // Bright Red
+            color: i === 0 ? '#FFFFFF' : '#FF0000', // White border for main circle
+            weight: i === 0 ? 1.5 : 0.5,
+            fillOpacity: 0.8 / opacityDivisor,
+            interactive: i === 0 // Only the center circle is interactive
+          }).addTo(mapRef.current!);
+          
+          if (i === 0) {
+            mainCircle = circleMarker;
+            
+            // Add click handler for the main extreme FRP marker
+            circleMarker.on('click', function(e) {
+              L.DomEvent.stopPropagation(e);
+              const { lat, lng } = e.target.getLatLng();
+              handleCoordinateUpdate(lat, lng);
+            });
+          }
+        }
+        
+        // Add a pulsing effect marker
+        L.circleMarker([point.latitude, point.longitude], {
+          radius: baseRadius * 3,
+          fillColor: '#FF3300',
+          color: '#FF3300',
+          weight: 0.5,
+          fillOpacity: 0.2,
+          className: 'pulse-marker',
+          interactive: false
+        }).addTo(mapRef.current!);
+        
+        // Add popup to the main circle
+        if (mainCircle) {
+          mainCircle.bindPopup(`
+            <div style="text-align:center;">
+              <h3 style="color:#FF0000;font-weight:bold;margin:0;">EXTREME FIRE</h3>
+              <p style="margin:5px 0;"><strong>FRP:</strong> ${point.frp.toFixed(1)} MW</p>
+              <p style="margin:5px 0;font-size:11px;">Latitude: ${point.latitude.toFixed(5)}</p>
+              <p style="margin:5px 0;font-size:11px;">Longitude: ${point.longitude.toFixed(5)}</p>
+            </div>
+          `);
+        }
+      });
+
+      // Add a 2 second artificial delay to ensure everything renders properly
       setTimeout(() => {
         setLoading(false);
         setMapReady(true);
@@ -167,15 +331,15 @@ const HawaiiMap = ({
       setError("Error creating heatmap visualization");
       setLoading(false);
     }
-  }, [firmsData]); 
-    
+  }, [firmsData]);
 
-
+  // Handle user-added markers
   useEffect(() => {
     if (!mapRef.current) return;
     
+    // Clear user-added markers (but not fire markers)
     mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+      if (layer instanceof L.Marker) {
         mapRef.current?.removeLayer(layer);
       }
     });
@@ -194,6 +358,13 @@ const HawaiiMap = ({
         fillOpacity: 0.8,
         className: 'pulse-marker'
       }).addTo(mapRef.current!);
+      
+      // Add click handler for custom markers
+      circleMarker.on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        const { lat, lng } = e.target.getLatLng();
+        handleCoordinateUpdate(lat, lng);
+      });
       
       if (marker.details) {
         circleMarker.bindPopup(
@@ -234,7 +405,7 @@ const HawaiiMap = ({
           overflow: 'hidden',
           visibility: mapReady ? 'visible' : 'hidden'
         }} 
-        className="map-container" 
+        className="map-container border-radar" 
       />
     </div>
   );

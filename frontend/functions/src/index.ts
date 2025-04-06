@@ -1,4 +1,6 @@
-// Import the Scheduler trigger and logger from Firebase Functions v2
+// Author: Raed Kabir 
+// Date: April 6, 2025
+
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions';
 import admin from 'firebase-admin';
@@ -11,7 +13,6 @@ import cors from 'cors';
 admin.initializeApp();
 const db = admin.firestore();
 
-// Set up Gemini
 const genAI = new GoogleGenerativeAI("GEMINI_API_KEY_HERE");
 
 
@@ -51,14 +52,12 @@ export async function getWeatherController(): Promise<Weather[]> {
 };
 
 
-// API Key for Weather
 const OPENWEATHER_API_KEY = 'OPENWEATHER_API_KEY_HERE';
 
 // --------------------------------------------------------------------
 // FIRMS Data Update Function with Weather Enrichment
 // --------------------------------------------------------------------
 
-// Define your FIRMSData interface
 export interface FIRMSData {
   country_id?: string;
   latitude: number;
@@ -166,6 +165,7 @@ function getFallbackMockData(): FIRMSData[] {
   });
 }
 
+// For every minute, just use each firms response's lat and long to feed into the weather api. Then, store in firebase
 export const scheduledFIRMSUpdate = onSchedule('every 1 minutes', async (event) => {
   try {
     const days = 1;

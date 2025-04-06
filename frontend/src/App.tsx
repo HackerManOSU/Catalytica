@@ -46,7 +46,7 @@ function App() {
                   <FireAnimation size={40} isVisible={true} />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">
+                  <h1 className="text-4xl font-bold text-white tracking-tight">
                     Catalytica
                   </h1>
                   <p className="text-orange-200">
