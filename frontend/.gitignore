@@ -16,6 +16,10 @@ dist-ssr
 *.env.local
 *.env
 
+# Ignore large datasets
+frontend/assets/NGBD/Concentrate/*.csv
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
