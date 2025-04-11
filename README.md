@@ -47,6 +47,7 @@ A real-time wildfire monitoring and resource allocation platform that provides c
 - TailwindCSS 
 
 ## Getting Started 
+## test test
 
 1. Clone the repository 
 2. Install dependencies:
