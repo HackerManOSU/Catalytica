@@ -1,7 +1,5 @@
 import { getDistance } from 'geolib';
 
-console.log('🔥 Script is running...');
-
 interface SampleLocation {
   lab_id: string;
   lat_wgs84: number;
