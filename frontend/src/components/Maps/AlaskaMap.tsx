@@ -7,7 +7,7 @@ import LoadingSpinner from '../utils/Loading/LoadingSpinner';
 import { useMapDispatch, useMapState } from '../utils/mapstate';
 import { MapActions } from '../utils/mapstate';
 import './border.css';
-
+//test test
 interface MapProps {
   center?: [number, number];
   zoom?: number;
